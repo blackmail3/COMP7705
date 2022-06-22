@@ -1,7 +1,7 @@
 package hku.cs.entity;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
@@ -14,11 +14,11 @@ public class Task implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Long taskid;
+    private Long taskId;
 
-    private String taskname;
+    private String taskName;
 
-    private String tasktype;
+    private String taskType;
 
     private String description;
 
@@ -38,7 +38,10 @@ public class Task implements Serializable {
 
     private LocalDateTime endTime;
 
+    @ApiModelProperty("0:Not Start 1:Running 2:Finish 3:Fail")
     private Integer status;
+
+    private Long userId;
 
 
 }

@@ -25,17 +25,17 @@ public class DatasetController {
 
     private final static SimpleDateFormat yyyyMMdd = new SimpleDateFormat("yyyyMMdd");
 
-    @PostMapping("/add_new_dataset")
+    @PostMapping("/add")
     public Result add(@RequestBody Dataset dataSet){
         User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-        Long userid = user.getId();
-        dataSet.setUserid(userid);
+        Long userId = user.getId();
+        dataSet.setUserId(userId);
         String timeMillis = String.valueOf(System.currentTimeMillis());
         String fiveNumber = timeMillis.substring(timeMillis.length() - 6);
         String date = yyyyMMdd.format(new Date());
 
 //        dataSet.setDatasetId(Long.parseLong(date+fiveNumber));
-        dataSet.setDatasetGroupId(Long.parseLong(date+fiveNumber));
+        dataSet.setDatasetGroupId(Long.parseLong(date+ fiveNumber));
         datasetService.save(dataSet);
 
         System.out.println(dataSet.getDatasetGroupId());

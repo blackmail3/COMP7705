@@ -3,9 +3,11 @@ package hku.cs.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import hku.cs.entity.Model;
+import hku.cs.entity.ModelConfig;
 import hku.cs.entity.User;
 import hku.cs.mapper.ModelMapper;
 import hku.cs.mapper.UserMapper;
+import hku.cs.service.ModelConfigService;
 import hku.cs.service.ModelService;
 import hku.cs.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +23,18 @@ public class ModelServiceImpl extends ServiceImpl<ModelMapper, Model> implements
     UserService userService;
     @Autowired
     UserMapper userMapper;
+    @Autowired
+    ModelConfigService modelConfigService;
 
     @Override
     public List<Model> getByuserId() {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userService.getByUsername(username);
-        return this.list(new QueryWrapper<Model>().eq("userid",user.getId()));
+        return this.list(new QueryWrapper<Model>().eq("user_id",user.getId()));
+    }
+
+    @Override
+    public ModelConfig getModelConfig(Long model_id) {
+        return modelConfigService.getOne(new QueryWrapper<ModelConfig>().eq("model_id", model_id));
     }
 }

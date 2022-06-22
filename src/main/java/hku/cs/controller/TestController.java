@@ -2,6 +2,8 @@ package hku.cs.controller;
 
 import cn.hutool.core.map.MapUtil;
 import hku.cs.common.lang.Result;
+import hku.cs.entity.Task;
+import hku.cs.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController {
     @Autowired
     BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    TaskService taskService;
 
     /**
      * password generator - white list
@@ -42,10 +46,22 @@ public class TestController {
     }
 
     @PostMapping("/train")
-    public Result train(@RequestParam String statu, @RequestParam String task_id){
+    public Result train(@RequestParam String status, @RequestParam String task_id){
         Long tid = Long.parseLong(task_id);
-        //...
+        // Receive algorithm side message...
+        System.out.println(tid);
+        Task task = taskService.getById(tid);
+        if (task==null){
+            return Result.fail("fail...");
+        }
+        if (status.equals("finish")) {
+            task.setStatus(2);
+        }else {
+            // if training fail...
+            task.setStatus(3);
+        }
+        taskService.updateById(taskService.getById(tid));
 
-        return Result.succ(statu);
+        return Result.succ(status);
     }
 }

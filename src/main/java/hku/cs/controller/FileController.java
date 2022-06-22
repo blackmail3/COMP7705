@@ -23,7 +23,7 @@ public class FileController
     @Autowired
     RedisUtil redisUtil;
 
-    @PostMapping("/upload")
+    @PostMapping("/dataset_upload")
     public String upload(MultipartFile file, HttpServletRequest req)
     {
         // String realPath = req.getSession().getServletContext().getRealPath("/uploadFile/");
@@ -32,7 +32,7 @@ public class FileController
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long user_id = userService.getByUsername(username).getId();
         String format = user_id+"";
-        File folder=new File("D:/dataset/"+format+"/"+"dataset");
+        File folder=new File("/FileDir/"+format+"/"+"dataset");
         if (!folder.isDirectory())
         {
             if (!folder.mkdirs())

@@ -21,7 +21,7 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
         response.setContentType("application/json;charset=UTF-8");
         ServletOutputStream outputStream = response.getOutputStream();
 
-        Result result = Result.fail("The user name or password is incorrect");
+        Result result = Result.fail("Fail! Check your username,  password and captcha.");
 
         outputStream.write(JSONUtil.toJsonStr(result).getBytes("UTF-8"));
 

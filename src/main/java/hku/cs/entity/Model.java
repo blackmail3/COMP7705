@@ -21,12 +21,12 @@ public class Model implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(value = "idmodel", type = IdType.AUTO)
-    private Long idmodel;
+    @TableId(value = "model_id", type = IdType.AUTO)
+    private Long modelId;
 
-    private Long userid;
+    private Long userId;
 
-    private String modelname;
+    private String modelName;
 
     private String preTrainedModel;
 
@@ -36,34 +36,34 @@ public class Model implements Serializable {
 
     private String description;
 
-    private LocalDateTime updatetime;
+    private LocalDateTime updateTime;
 
     public static long getSerialVersionUID() {
         return serialVersionUID;
     }
 
-    public Long getIdmodel() {
-        return idmodel;
+    public Long getModelId() {
+        return modelId;
     }
 
-    public void setIdmodel(Long idmodel) {
-        this.idmodel = idmodel;
+    public void setModelId(Long modelId) {
+        this.modelId = modelId;
     }
 
-    public Long getUserid() {
-        return userid;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUserid(Long userid) {
-        this.userid = userid;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
-    public String getModelname() {
-        return modelname;
+    public String getModelName() {
+        return modelName;
     }
 
-    public void setModelname(String modelname) {
-        this.modelname = modelname;
+    public void setModelName(String modelName) {
+        this.modelName = modelName;
     }
 
     public String getPreTrainedModel() {
@@ -99,10 +99,10 @@ public class Model implements Serializable {
     }
 
     public LocalDateTime getUpdateTime() {
-        return updatetime;
+        return updateTime;
     }
 
     public void setUpdateTime(LocalDateTime updateTime) {
-        this.updatetime = updateTime;
+        this.updateTime = updateTime;
     }
 }

@@ -38,23 +38,23 @@ public class ModelController {
     public Result add(@RequestBody Model model){
         User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         Long userid = user.getId();
-        model.setUserid(userid);
+        model.setUserId(userid);
         model.setUpdateTime(LocalDateTime.now());
         modelService.saveOrUpdate(model);
-        Object object = redisUtil.get("modelconfig_"+userid);
+        Object object = redisUtil.get("model_config_"+userid);
         ModelConfig modelConfig = new ModelConfig(); // default value
 //        System.out.println(object.toString());
 
         if (object==null) {
-            modelConfig.setModelId(model.getIdmodel());
+            modelConfig.setModelId(model.getModelId());
             modelConfigService.save(modelConfig);
         }
         else{
             modelConfig = JSON.parseObject((String) object, ModelConfig.class);
-            modelConfig.setModelId(model.getIdmodel());
+            modelConfig.setModelId(model.getModelId());
             modelConfigService.save(modelConfig);
         }
-        redisUtil.del("modelconfig");
+        redisUtil.del("model_config_"+userid);
         ArrayList<Object> modelList = new ArrayList<>();
         modelList.add(model);
         modelList.add(modelConfig);
@@ -68,8 +68,8 @@ public class ModelController {
     }
 
     @DeleteMapping("/del")
-    public Result del(@RequestParam Long modelid){
-        boolean del = modelService.removeById(modelid);
-        return Result.succ(modelid);
+    public Result del(@RequestParam Long modelId){
+        boolean del = modelService.removeById(modelId);
+        return Result.succ(modelId);
     }
 }

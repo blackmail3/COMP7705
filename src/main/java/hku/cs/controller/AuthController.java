@@ -38,18 +38,26 @@ public class AuthController extends BaseController{
         String code = producer.createText();
 
         // for Test
-        key = "aaaaa";
-        code = "123456";
+//        key = "aaaaa";
+//        code = "123456";
+
+//        producer.createImage("123");
+
+        System.out.println("key:"+key);
+        System.out.println("code:"+code);
 
         BufferedImage image = producer.createImage(code);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ImageIO.write(image, "jpg", outputStream);
 
         String str = "data:image/jpeg;base64,";
+        System.out.println(str);
 
         String base64Img = str + Base64.encodeBase64String(outputStream.toByteArray());
 
+        System.out.println("Redis---");
         redisUtil.hset(Const.CAPTCHA_KEY, key, code, 120);
+        System.out.println("redis write...");
 
         return MapUtil.builder()
                 .put("token", key)

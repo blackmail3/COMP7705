@@ -11,22 +11,28 @@ import org.apache.http.util.EntityUtils;
 
 public class PostUtil {
     private String path;
+    private String tid;
 
-    public PostUtil(String path) {
+    public PostUtil(String path, String tid) {
         this.path = path;
+        this.tid = tid;
     }
 
+    //tbc: post err
     public String sendPost(){
         String result="";
 //        String path = "args.json";
         HttpPost post = new HttpPost("http://127.0.0.1:9000/NLPServer/train");
         //Set request time
-        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(18000000).setConnectTimeout(18000000).build();
+        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(18000).setConnectTimeout(18000).build();
         post.setConfig(requestConfig);
         try {
             String body = "{\"config_path\":\""
-                    + this.path
+                    + this.path + "\","
+                    + "\"task_id\":\""
+                    + tid
                     + "\"}";
+            System.out.println(body);
             post.setEntity(new StringEntity(body));
             post.setHeader("Content-type", "application/json");
             CloseableHttpClient client = HttpClients.createDefault();

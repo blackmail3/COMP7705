@@ -179,6 +179,39 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                    <fork>true</fork>
+                    <addResources>true</addResources>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!--安装docker插件-->
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <configuration>
+                    <!--远程连接地址-->
+                    <dockerHost>http://8.130.28.125:2375</dockerHost>
+                    <!--镜像名称-->
+                    <imageName>image_docker/${project.artifactId}</imageName>
+                    <!--dockerfile的位置-->
+                    <dockerDirectory>src/main/docker</dockerDirectory>
+                    <resources>
+                        <resource>
+                            <targetPath>/target</targetPath>
+<!--                            &lt;!&ndash;jar 包所在的路径 此处配置的 即对应 target 目录&ndash;&gt;-->
+<!--                            <directory>target</directory>-->
+                            <!-- 需要包含的 jar包 ，这里对应的是 Dockerfile中添加的文件名　-->
+                            <include>proj-0.0.1-SNAPSHOT.jar</include>
+                        </resource>
+                    </resources>
+
                 </configuration>
             </plugin>
         </plugins>
