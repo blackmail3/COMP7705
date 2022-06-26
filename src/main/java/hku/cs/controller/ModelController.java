@@ -70,6 +70,14 @@ public class ModelController {
     @DeleteMapping("/del")
     public Result del(@RequestParam Long modelId){
         boolean del = modelService.removeById(modelId);
-        return Result.succ(modelId);
+        return Result.succ(del);
     }
+
+    @GetMapping("/detail")
+    public Result get(@RequestParam Long modelId){
+        Model model = modelService.getById(modelId);
+        return Result.succ(model);
+    }
+
+
 }

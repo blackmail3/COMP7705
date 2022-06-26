@@ -5,6 +5,7 @@ import hku.cs.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,7 +25,7 @@ public class FileController
     RedisUtil redisUtil;
 
     @PostMapping("/dataset_upload")
-    public String upload(MultipartFile file, HttpServletRequest req)
+    public String upload(@RequestBody MultipartFile file, HttpServletRequest req)
     {
         // String realPath = req.getSession().getServletContext().getRealPath("/uploadFile/");
 //        String format = sdf.format(new Date());
@@ -32,7 +33,12 @@ public class FileController
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long user_id = userService.getByUsername(username).getId();
         String format = user_id+"";
-        File folder=new File("/FileDir/"+format+"/"+"dataset");
+
+        // Linux
+        File folder=new File("usr/local/src/FileDir/"+format+"/"+"dataset");
+        //Win
+//        File folder=new File("D:/FileDir/"+format+"/"+"dataset");
+
         if (!folder.isDirectory())
         {
             if (!folder.mkdirs())
@@ -46,8 +52,10 @@ public class FileController
         try
         {
             file.transferTo(new File(folder, newName));
-//            redisUtil.set("datasetPath_"+user_id,newName);
-            return req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + "/files/" + format +"/"+ newName;
+            //redis--cache
+            redisUtil.set("datasetPath_"+user_id,folder+"/"+newName);
+//            return req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + "/files/" + format +"/"+ newName;
+            return folder+"/"+newName;
         } catch (IOException e)
         {
             e.printStackTrace();

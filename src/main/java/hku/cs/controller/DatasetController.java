@@ -5,6 +5,7 @@ import hku.cs.entity.Dataset;
 import hku.cs.entity.User;
 import hku.cs.service.DatasetService;
 import hku.cs.service.UserService;
+import hku.cs.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -22,24 +23,34 @@ public class DatasetController {
     UserService userService;
     @Autowired
     DatasetService datasetService;
+    @Autowired
+    RedisUtil redisUtil;
 
     private final static SimpleDateFormat yyyyMMdd = new SimpleDateFormat("yyyyMMdd");
 
     @PostMapping("/add")
-    public Result add(@RequestBody Dataset dataSet){
+    public Result add(@RequestBody Dataset dataset){
         User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         Long userId = user.getId();
-        dataSet.setUserId(userId);
+        dataset.setUserId(userId);
         String timeMillis = String.valueOf(System.currentTimeMillis());
         String fiveNumber = timeMillis.substring(timeMillis.length() - 6);
         String date = yyyyMMdd.format(new Date());
+        Object ob = redisUtil.get("datasetPath_"+userId);
+
+//        if (dataset.getType().equals("single")){
+//
+//        }else if (dataset.getType().equals("multiple")){
+//
+//        }
 
 //        dataSet.setDatasetId(Long.parseLong(date+fiveNumber));
-        dataSet.setDatasetGroupId(Long.parseLong(date+ fiveNumber));
-        datasetService.save(dataSet);
+        dataset.setDatasetGroupId(Long.parseLong(date+ fiveNumber));
+        datasetService.save(dataset);
 
-        System.out.println(dataSet.getDatasetGroupId());
-        return Result.succ(dataSet);
+        // dataset_group_id...???
+        System.out.println(dataset.getDatasetGroupId());
+        return Result.succ(dataset);
     }
 
     @GetMapping("/list")
@@ -47,4 +58,9 @@ public class DatasetController {
         List<Dataset> list = datasetService.getByuserId();
         return Result.succ(list);
     }
+
+//    @GetMapping("/detail")
+//    public Result get(){
+//
+//    }
 }

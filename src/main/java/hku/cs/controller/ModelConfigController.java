@@ -33,4 +33,10 @@ public class ModelConfigController {
         return Result.succ(modelConfig);
     }
 
+    @GetMapping("/{modelId}")
+    public Result getConfig(@PathVariable Long modelId){
+        ModelConfig modelConfig = modelConfigService.getByModelId(modelId);
+        return Result.succ(modelConfig);
+    }
+
 }
