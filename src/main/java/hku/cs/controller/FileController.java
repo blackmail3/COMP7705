@@ -16,8 +16,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 @RestController
-public class FileController
-{
+public class FileController {
     @Autowired
     UserService userService;
 
@@ -25,39 +24,33 @@ public class FileController
     RedisUtil redisUtil;
 
     @PostMapping("/dataset_upload")
-    public String upload(@RequestBody MultipartFile file, HttpServletRequest req)
-    {
+    public String upload(@RequestBody MultipartFile file, HttpServletRequest req) {
         // String realPath = req.getSession().getServletContext().getRealPath("/uploadFile/");
 //        String format = sdf.format(new Date());
         // File folder = new File(realPath + format);
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long user_id = userService.getByUsername(username).getId();
-        String format = user_id+"";
 
         // Linux
-        File folder=new File("usr/local/src/FileDir/"+format+"/"+"dataset");
+        File folder = new File("/var/doc/dataset/" + user_id);
         //Win
 //        File folder=new File("D:/FileDir/"+format+"/"+"dataset");
 
-        if (!folder.isDirectory())
-        {
-            if (!folder.mkdirs())
-            {
+        if (!folder.isDirectory()) {
+            if (!folder.mkdirs()) {
                 return "Folder creation failed";
             }
         }
         String oldName = file.getOriginalFilename();
         assert oldName != null;
         String newName = UUID.randomUUID().toString() + oldName.substring(oldName.lastIndexOf("."));
-        try
-        {
+        try {
             file.transferTo(new File(folder, newName));
             //redis--cache
-            redisUtil.set("datasetPath_"+user_id,folder+"/"+newName);
+            redisUtil.set("datasetPath_" + user_id, folder + "/" + newName);
 //            return req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + "/files/" + format +"/"+ newName;
-            return folder+"/"+newName;
-        } catch (IOException e)
-        {
+            return folder + "/" + newName;
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return "Upload failed";
