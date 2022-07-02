@@ -49,7 +49,7 @@ public class WordcloudController {
         //dual input command
         String orgData = dataset.getPath() + " ";
         String wordCount = wordcount + " ";
-        String path = "/var/doc/dataset/" + user_id + "/" + dataset_id;
+        String path = "/var/doc/usr" + user_id + "/dataset" + dataset_id;
         File file = new File(path);
         if (!file.exists())
             file.mkdir();

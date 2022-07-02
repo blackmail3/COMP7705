@@ -24,6 +24,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1.0/model")
+@CrossOrigin
 public class ModelController {
     @Autowired
     ModelService modelService;

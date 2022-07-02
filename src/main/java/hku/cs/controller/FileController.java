@@ -32,7 +32,7 @@ public class FileController {
         Long user_id = userService.getByUsername(username).getId();
 
         // Linux
-        File folder = new File("/var/doc/dataset/" + user_id);
+        File folder = new File("/var/doc/usr" + user_id + "/dataset");
         //Win
 //        File folder=new File("D:/FileDir/"+format+"/"+"dataset");
 
