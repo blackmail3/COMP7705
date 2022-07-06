@@ -7,32 +7,43 @@ import lombok.Data;
  * @author xxy
  */
 /*
-"model_name_or_path": "bert-base-uncased", 用户在创建*任务*时指定，default为"bert-base-uncased"
-    "ln_type": "post", 用户在创建*模型*时指定，default为post，可选(post, pre)
-    "freeze": "", 用户在创建*模型*时指定，default为""，可选'embeddings', 'encoder', 'all', "1,2,..."
-    "cls_type": "fc", 用户在创建*模型*时指定，default为fc，有cnn, lstm, fc
-    "pooler_type": "cls", 用户在创建*模型*时指定，default为cls
-    "activation": "gelu", 用户在创建*模型*时指定，default为gelu,
-    "train_file": "path / to / train set", 必须有
-    "valid_file": "path / to / valid set", 可以没有，如果这里没有那么do_eval=false
-    "test_file": "path / to / test set", 可以没有
-    "max_seq_length": 256, 用户在创建*任务*时给定，default为256
+{
+    "model_name_or_path": "bert-base-uncased",
+    "ln_type": "post",
+    "freeze_layers": "10,11",
+    "freeze": "",
+    "cls_type": "fc",
+    "pooler_type": "cls",
+    "activation": "gelu",
+    "train_file": "data/train.csv",
+    "valid_file": "data/valid.csv",
+    "test_file": "data/test.csv",
+    "src_column1": "content",
+    "tgt_column": "label",
+    "max_seq_length": 256,
     "pad_to_max_length": false,
-    "output_dir": "path / to / output", 后端指定，output存放地址，会包含训练后的模型参数和log
+    "output_dir": "output",
     "overwrite_output_dir": true,
-    "num_train_epochs": 10, 用户在创建*任务*时给定，default为10
-    "per_device_train_batch_size": 128, 用户在创建*任务*时给定，default为128
-    "learning_rate": 5e-5, 用户在创建*任务*时给定，default为5e-5
+    "num_train_epochs": 1,
+    "per_device_train_batch_size": 1,
+    "per_device_eval_batch_size": 1,
+    "learning_rate": 5e-5,
+    "warmup_ratio": 0.1,
+    "weight_decay": 0.01,
     "evaluation_strategy": "epoch",
+    "save_strategy": "epoch",
+    "save_total_limit": 5,
     "load_best_model_at_end": true,
     "do_train": true,
     "do_eval": true,
-    "fp16": true,
-    "report_to": "wandb",
-    "run_name": "任务ID" 后端指定
+    "fp16": false,
+    "repost_to": "tensorboard",
+    "logging_dir": "output/tensorboard",
+    "disable_tqdm": true
+}
  */
 @Data
-public class JsonBean {
+public class TrainJsonBean {
     private String model_name_or_path = "bert-base-uncased";
     private String ln_type = "post";
     private String cls_type = "fc";
@@ -41,19 +52,24 @@ public class JsonBean {
     private String train_file = "";
     private String valid_file = "";
     private String test_file = "";
+    private String src_column1 = "";
+    private String tgt_column = "";
     private int max_seq_length = 256;
     private boolean pad_to_max_length = false;
     private String output_dir = "";
     private boolean overwrite_output_dir = true;
     private int num_train_epochs = 10;
     private int per_device_train_batch_size = 128;
+    private int per_device_eval_batch_size = 128;
     private double learning_rate = 5e-5;
     private String evaluation_strategy = "epoch";
     private boolean load_best_model_at_end = true;
     private boolean do_train = true;
     private boolean do_eval = true;
     private boolean fp16 = true;
-    private String report_to = "wandb";
+    private String report_to = "tensorboard";
+    private String logging_dir = "";
+    private boolean disable_tqdm = true;
     private String run_name = "";   //Task ID
 
     public String getModel_name_or_path() {
@@ -120,6 +136,22 @@ public class JsonBean {
         this.test_file = test_file;
     }
 
+    public String getSrc_column1() {
+        return src_column1;
+    }
+
+    public void setSrc_column1(String src_column1) {
+        this.src_column1 = src_column1;
+    }
+
+    public String getTgt_column() {
+        return tgt_column;
+    }
+
+    public void setTgt_column(String tgt_column) {
+        this.tgt_column = tgt_column;
+    }
+
     public int getMax_seq_length() {
         return max_seq_length;
     }
@@ -166,6 +198,14 @@ public class JsonBean {
 
     public void setPer_device_train_batch_size(int per_device_train_batch_size) {
         this.per_device_train_batch_size = per_device_train_batch_size;
+    }
+
+    public int getPer_device_eval_batch_size() {
+        return per_device_eval_batch_size;
+    }
+
+    public void setPer_device_eval_batch_size(int per_device_eval_batch_size) {
+        this.per_device_eval_batch_size = per_device_eval_batch_size;
     }
 
     public double getLearning_rate() {
@@ -222,6 +262,22 @@ public class JsonBean {
 
     public void setReport_to(String report_to) {
         this.report_to = report_to;
+    }
+
+    public String getLogging_dir() {
+        return logging_dir;
+    }
+
+    public void setLogging_dir(String logging_dir) {
+        this.logging_dir = logging_dir;
+    }
+
+    public boolean isDisable_tqdm() {
+        return disable_tqdm;
+    }
+
+    public void setDisable_tqdm(boolean disable_tqdm) {
+        this.disable_tqdm = disable_tqdm;
     }
 
     public String getRun_name() {

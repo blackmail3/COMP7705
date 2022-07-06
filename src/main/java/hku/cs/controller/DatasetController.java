@@ -26,35 +26,36 @@ public class DatasetController {
     @Autowired
     RedisUtil redisUtil;
 
-    private final static SimpleDateFormat yyyyMMdd = new SimpleDateFormat("yyyyMMdd");
+    private final static SimpleDateFormat yyMMdd = new SimpleDateFormat("yyMMdd");
 
     @PostMapping("/add")
-    public Result add(@RequestBody Dataset dataset){
+    public Result add(@RequestBody Dataset dataset) {
         User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         Long userId = user.getId();
         dataset.setUserId(userId);
         String timeMillis = String.valueOf(System.currentTimeMillis());
-        String fiveNumber = timeMillis.substring(timeMillis.length() - 6);
-        String date = yyyyMMdd.format(new Date());
-        Object ob = redisUtil.get("datasetPath_"+userId);
-
+        String fiveNumber = timeMillis.substring(timeMillis.length() - 8);
+        String date = yyMMdd.format(new Date());
+        Object ob = redisUtil.get("datasetPath_" + userId);
+        System.out.println(ob.toString());
+        dataset.setPath(ob.toString());
 //        if (dataset.getType().equals("single")){
 //
-//        }else if (dataset.getType().equals("multiple")){
+//        }else if (dataset.getType().equals("dual")){
 //
 //        }
 
 //        dataSet.setDatasetId(Long.parseLong(date+fiveNumber));
-        dataset.setDatasetGroupId(Long.parseLong(date+ fiveNumber));
+        dataset.setDatasetId(Long.parseLong(date + fiveNumber));
         datasetService.save(dataset);
 
         // dataset_group_id...???
-        System.out.println(dataset.getDatasetGroupId());
+//        System.out.println("dataset_id:" + dataset.getDatasetGroupId());
         return Result.succ(dataset);
     }
 
     @GetMapping("/list")
-    public Result list(){
+    public Result list() {
         List<Dataset> list = datasetService.getByuserId();
         return Result.succ(list);
     }
