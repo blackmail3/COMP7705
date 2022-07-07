@@ -35,7 +35,7 @@ public class FileController {
         File folder = new File("/var/doc/usr" + user_id + "/dataset");
 //        File folder = new File("D:/var/doc/usr" + user_id + "/dataset");
         //Win
-//        File folder=new File("D:/FileDir/"+format+"/"+"dataset");
+//        File folder = new File("var/doc/usr" + user_id + "/dataset");
 
         if (!folder.isDirectory()) {
             if (!folder.mkdirs()) {

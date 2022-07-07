@@ -49,8 +49,6 @@ public class DatasetController {
         dataset.setDatasetId(Long.parseLong(date + fiveNumber));
         datasetService.save(dataset);
 
-        // dataset_group_id...???
-//        System.out.println("dataset_id:" + dataset.getDatasetGroupId());
         return Result.succ(dataset);
     }
 

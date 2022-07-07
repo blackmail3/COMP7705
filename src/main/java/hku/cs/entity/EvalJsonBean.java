@@ -1,4 +1,5 @@
 package hku.cs.entity;
+
 /*
 {
     "model_name_or_path": "output/checkpoint-3",
@@ -21,6 +22,8 @@ package hku.cs.entity;
 public class EvalJsonBean {
     private String model_name_or_path = "";
     private String ln_type = "post";
+    private String freeze_layer = "";
+    private String freeze = "";
     private String cls_type = "fc";
     private String pooler_type = "cls";
     private String activation = "gelu";
@@ -32,8 +35,6 @@ public class EvalJsonBean {
     private String output_dir = "";
     private boolean overwrite_output_dir = true;
     private int per_device_eval_batch_size = 128;
-    private double learning_rate = 5e-5;
-    private String evaluation_strategy = "epoch";
 
     public String getModel_name_or_path() {
         return model_name_or_path;
@@ -49,6 +50,22 @@ public class EvalJsonBean {
 
     public void setLn_type(String ln_type) {
         this.ln_type = ln_type;
+    }
+
+    public String getFreeze_layer() {
+        return freeze_layer;
+    }
+
+    public void setFreeze_layer(String freeze_layer) {
+        this.freeze_layer = freeze_layer;
+    }
+
+    public String getFreeze() {
+        return freeze;
+    }
+
+    public void setFreeze(String freeze) {
+        this.freeze = freeze;
     }
 
     public String getCls_type() {
@@ -137,21 +154,5 @@ public class EvalJsonBean {
 
     public void setPer_device_eval_batch_size(int per_device_eval_batch_size) {
         this.per_device_eval_batch_size = per_device_eval_batch_size;
-    }
-
-    public double getLearning_rate() {
-        return learning_rate;
-    }
-
-    public void setLearning_rate(double learning_rate) {
-        this.learning_rate = learning_rate;
-    }
-
-    public String getEvaluation_strategy() {
-        return evaluation_strategy;
-    }
-
-    public void setEvaluation_strategy(String evaluation_strategy) {
-        this.evaluation_strategy = evaluation_strategy;
     }
 }

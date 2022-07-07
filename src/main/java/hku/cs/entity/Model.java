@@ -28,8 +28,6 @@ public class Model implements Serializable {
 
     private String modelName;
 
-    private String preTrainedModel;
-
     private String basicModel;
 
     private String config;
@@ -37,6 +35,8 @@ public class Model implements Serializable {
     private String description;
 
     private LocalDateTime updateTime;
+
+    private String initParam;
 
     public static long getSerialVersionUID() {
         return serialVersionUID;
@@ -64,14 +64,6 @@ public class Model implements Serializable {
 
     public void setModelName(String modelName) {
         this.modelName = modelName;
-    }
-
-    public String getPreTrainedModel() {
-        return preTrainedModel;
-    }
-
-    public void setPreTrainedModel(String preTrainedModel) {
-        this.preTrainedModel = preTrainedModel;
     }
 
     public String getBasicModel() {
@@ -104,5 +96,13 @@ public class Model implements Serializable {
 
     public void setUpdateTime(LocalDateTime updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getInitParam() {
+        return initParam;
+    }
+
+    public void setInitParam(String initParam) {
+        this.initParam = initParam;
     }
 }

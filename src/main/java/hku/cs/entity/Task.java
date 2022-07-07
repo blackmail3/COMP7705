@@ -24,7 +24,9 @@ public class Task implements Serializable {
 
     private Long modelId;
 
-    private Long datasetId;
+    private Long datasetIdTrain;
+
+    private Long datasetIdTest;
 
     private Float learningRate;
 
@@ -42,6 +44,8 @@ public class Task implements Serializable {
     private Integer status;
 
     private Long userId;
+
+    private int batchSize;
 
 
 }

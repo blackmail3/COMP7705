@@ -46,6 +46,8 @@ import lombok.Data;
 public class TrainJsonBean {
     private String model_name_or_path = "bert-base-uncased";
     private String ln_type = "post";
+    private String freeze_layer = "";
+    private String freeze = "";
     private String cls_type = "fc";
     private String pooler_type = "cls";
     private String activation = "gelu";
@@ -53,6 +55,7 @@ public class TrainJsonBean {
     private String valid_file = "";
     private String test_file = "";
     private String src_column1 = "";
+    private String src_column2 = "";
     private String tgt_column = "";
     private int max_seq_length = 256;
     private boolean pad_to_max_length = false;
@@ -62,7 +65,11 @@ public class TrainJsonBean {
     private int per_device_train_batch_size = 128;
     private int per_device_eval_batch_size = 128;
     private double learning_rate = 5e-5;
+    private double warmup_ratio =0.1;
+    private double weight_decay=0.01;
     private String evaluation_strategy = "epoch";
+    private String save_strategy = "epoch";
+    private int save_total_limit = 5;
     private boolean load_best_model_at_end = true;
     private boolean do_train = true;
     private boolean do_eval = true;
@@ -70,7 +77,6 @@ public class TrainJsonBean {
     private String report_to = "tensorboard";
     private String logging_dir = "";
     private boolean disable_tqdm = true;
-    private String run_name = "";   //Task ID
 
     public String getModel_name_or_path() {
         return model_name_or_path;
@@ -86,6 +92,22 @@ public class TrainJsonBean {
 
     public void setLn_type(String ln_type) {
         this.ln_type = ln_type;
+    }
+
+    public String getFreeze_layer() {
+        return freeze_layer;
+    }
+
+    public void setFreeze_layer(String freeze_layer) {
+        this.freeze_layer = freeze_layer;
+    }
+
+    public String getFreeze() {
+        return freeze;
+    }
+
+    public void setFreeze(String freeze) {
+        this.freeze = freeze;
     }
 
     public String getCls_type() {
@@ -216,12 +238,44 @@ public class TrainJsonBean {
         this.learning_rate = learning_rate;
     }
 
+    public double getWarmup_ratio() {
+        return warmup_ratio;
+    }
+
+    public void setWarmup_ratio(double warmup_ratio) {
+        this.warmup_ratio = warmup_ratio;
+    }
+
+    public double getWeight_decay() {
+        return weight_decay;
+    }
+
+    public void setWeight_decay(double weight_decay) {
+        this.weight_decay = weight_decay;
+    }
+
     public String getEvaluation_strategy() {
         return evaluation_strategy;
     }
 
     public void setEvaluation_strategy(String evaluation_strategy) {
         this.evaluation_strategy = evaluation_strategy;
+    }
+
+    public String getSave_strategy() {
+        return save_strategy;
+    }
+
+    public void setSave_strategy(String save_strategy) {
+        this.save_strategy = save_strategy;
+    }
+
+    public int getSave_total_limit() {
+        return save_total_limit;
+    }
+
+    public void setSave_total_limit(int save_total_limit) {
+        this.save_total_limit = save_total_limit;
     }
 
     public boolean isLoad_best_model_at_end() {
@@ -278,13 +332,5 @@ public class TrainJsonBean {
 
     public void setDisable_tqdm(boolean disable_tqdm) {
         this.disable_tqdm = disable_tqdm;
-    }
-
-    public String getRun_name() {
-        return run_name;
-    }
-
-    public void setRun_name(String run_name) {
-        this.run_name = run_name;
     }
 }

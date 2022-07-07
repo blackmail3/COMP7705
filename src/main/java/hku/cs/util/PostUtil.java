@@ -32,6 +32,11 @@ public class PostUtil {
                     + "\"task_id\":\""
                     + tid
                     + "\"}";
+//            String body = "{\"config_path\":\""
+//                    + "/root/TextCLS/config/args.json" + "\","
+//                    + "\"task_id\":\""
+//                    + tid
+//                    + "\"}";
             System.out.println(body);
             post.setEntity(new StringEntity(body));
             post.setHeader("Content-type", "application/json");

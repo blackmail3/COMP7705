@@ -27,9 +27,10 @@ public class ModelConfigController {
     @PostMapping("/add")
     public Result add(@RequestBody ModelConfig modelConfig){
         User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-        Long userid = user.getId();
+        Long user_id = user.getId();
+        System.out.println(modelConfig.toString());
         Object ob = JSONUtil.parse(modelConfig);
-        redisUtil.set("model_config_"+userid, ob.toString());
+        redisUtil.set("model_config_"+user_id, ob.toString());
         return Result.succ(modelConfig);
     }
 
