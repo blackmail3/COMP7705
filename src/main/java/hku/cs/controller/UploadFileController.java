@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 @RestController
-public class FileController {
+public class UploadFileController {
     @Autowired
     UserService userService;
 

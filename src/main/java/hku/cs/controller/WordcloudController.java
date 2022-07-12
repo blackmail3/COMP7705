@@ -1,6 +1,7 @@
 package hku.cs.controller;
 
 import cn.hutool.core.map.MapUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import hku.cs.common.lang.Result;
 import hku.cs.entity.Dataset;
@@ -13,9 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.apache.commons.io.IOUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -28,69 +27,90 @@ public class WordcloudController {
     @Autowired
     UserService userService;
 
-    // TODO: 2022/7/7  test...
-    @GetMapping("/{dataset_id}/{wordcount}")
-    public Result getImg(@PathVariable Long dataset_id, @PathVariable int wordcount) {
+    // TODO: 2022/7/7  local test...
+    @GetMapping("/gen/{dataset_id}")
+    public Result getImg(@PathVariable Long dataset_id) {
         Dataset dataset = datasetService.getById(dataset_id);
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long user_id = userService.getByUsername(username).getId();
-        //single input command
-//        String runningFile = "/Users/yuanren/Desktop/FinalProj/tool/pycode/single_input.py ";
-//        String orgData = "/Users/yuanren/Desktop/FinalProj/tool/SST-2/train.csv ";
-//        String wc_savePath = "/Users/yuanren/Desktop/FinalProj/tool/result/result_sc_single.json ";
-//        String wordCount = "200 ";
-//        String pie_savePath = "/Users/yuanren/Desktop/FinalProj/tool/result/result_pie_single.json ";
-//        String command = "python3 " + runningFile + orgData + wc_savePath + wordCount + pie_savePath;
-        String runningFile;
+
+        String runningFile = "/var/doc/process_input.py ";
+        String input_type = ""; // single or dual input
         if (dataset.getType().equals("single")) {
-            runningFile = "/var/doc/single_input.py ";
-        }
-        else
-            runningFile = "/var/doc/dual_input.py ";
-        //dual input command
+            input_type = "single ";
+        } else
+            input_type = "dual ";
         String orgData = dataset.getPath() + " ";
-        String wordCount = wordcount + " ";
-        String path = "/var/doc/usr" + user_id + "/dataset" + dataset_id;
-        File file = new File(path);
+        String wordCount = 50 + " ";
+        String savePath = "/var/doc/usr" + user_id + "/dataset" + dataset_id;
+        File file = new File(savePath);
         if (!file.exists())
             file.mkdir();
-        String wc_savePath = path + "/result_sc.json ";
-        String pie_savePath = path + "/result_pie.json ";
-        String command = "python3 " + runningFile + orgData + wc_savePath + wordCount + pie_savePath;
 
-        if (!new File(wc_savePath).exists() || !new File(pie_savePath).exists()) {
-            try {
-                Process proc = Runtime.getRuntime().exec(command);
-                // test for the connection
-//            BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-//            String line = null;
-//            while((line = in.readLine()) != null){
-//                System.out.println(line);
-//            }
-//            in.close();
-                proc.waitFor();
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
+        String command = "python3 " + runningFile + input_type + orgData + savePath + wordCount;
+
+        try {
+            Process proc = Runtime.getRuntime().exec(command);
+            // test for the connection
+            BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            String line = null;
+            while ((line = in.readLine()) != null) {
+                System.out.println(line);
             }
+            in.close();
+            proc.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
         }
 
-        JSONObject json_wc = null;
-        JSONObject json_pie = null;
-        try (
-                InputStream is_wc = Thread.currentThread().getContextClassLoader().getResourceAsStream(wc_savePath);
-                InputStream is_pie = Thread.currentThread().getContextClassLoader().getResourceAsStream(pie_savePath);
-        ) {
-            json_wc = JSONObject.parseObject(IOUtils.toString(is_wc, "utf-8"));
-            json_pie = JSONObject.parseObject(IOUtils.toString(is_pie, "utf-8"));
-        } catch (Exception e) {
-            System.out.println(wc_savePath + " read file error!" + e);
-            System.out.println(pie_savePath + " read file error!" + e);
-        }
+        return Result.succ(savePath);
+    }
+
+    @GetMapping("/getjson/{dataset_id}")
+    public Result getjson(@PathVariable Long dataset_id){
+        Dataset dataset = datasetService.getById(dataset_id);
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long user_id = userService.getByUsername(username).getId();
+
+        // TODO: 2022/7/13 Path
+        String fileName = "/var/doc/usr" + user_id + "/dataset" + dataset_id;
+        File jsonFile = new File(fileName);
+        String jsonData = getStr(jsonFile);
+
+        JSONObject parse = (JSONObject) JSONObject.parse(jsonData);
+        JSONArray err = parse.getJSONArray("error_message");
+        System.out.println(err);
+        JSONArray wc_res = parse.getJSONArray("wc_result");
+        JSONArray pie_res = parse.getJSONArray("pie_result");
+        JSONArray violin_res = parse.getJSONArray("violin_result");
+        System.out.println(pie_res);
         return Result.succ(
                 MapUtil.builder()
-                        .put("wc", json_wc)
-                        .put("pie", json_pie)
+                        .put("error_message", err)
+                        .put("wc_result", wc_res)
+                        .put("pie_result", pie_res)
+                        .put("violin_result", violin_res)
                         .build()
         );
+    }
+
+    public String getStr(File jsonFile) {
+        String jsonStr = "";
+        try {
+            FileReader fileReader = new FileReader(jsonFile);
+            Reader reader = new InputStreamReader(new FileInputStream(jsonFile), "utf-8");
+            int ch = 0;
+            StringBuffer sb = new StringBuffer();
+            while ((ch = reader.read()) != -1) {
+                sb.append((char) ch);
+            }
+            fileReader.close();
+            reader.close();
+            jsonStr = sb.toString();
+            return jsonStr;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

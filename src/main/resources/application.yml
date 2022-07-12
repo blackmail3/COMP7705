@@ -19,3 +19,5 @@ project:
     # Token validity period: 7 days, unit: second
     expire: 604800
     header: Authorization
+file:
+  doc-dir: /var/doc/
