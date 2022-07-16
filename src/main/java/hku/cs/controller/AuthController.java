@@ -38,8 +38,8 @@ public class AuthController extends BaseController{
         String code = producer.createText();
 
         // for Test
-//        key = "aaaaa";
-//        code = "123456";
+        key = "aaaaa";
+        code = "123456";
 
 //        producer.createImage("123");
 
