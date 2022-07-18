@@ -1,6 +1,8 @@
 package hku.cs.controller;
 
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import hku.cs.common.lang.Result;
 import hku.cs.entity.Model;
@@ -39,6 +41,12 @@ public class TaskController {
         return Result.succ(tasks);
     }
 
+    @DeleteMapping("/del/{task_id}")
+    public Result del(@PathVariable Long task_id) {
+        taskService.removeById(task_id);
+        return Result.succ(task_id);
+    }
+
     @PostMapping("/add")
     public Result add(@RequestBody Task task) {
         System.out.println("model:" + task.getModelId());
@@ -46,7 +54,7 @@ public class TaskController {
         String timeMillis = String.valueOf(System.currentTimeMillis());
         String fiveNumber = timeMillis.substring(timeMillis.length() - 8);
         String date = yyMMdd.format(new Date());
-        task.setTaskId(Long.parseLong(date+fiveNumber));
+        task.setTaskId(Long.parseLong(date + fiveNumber));
         User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         Long userId = user.getId();
         task.setUserId(userId);
@@ -56,8 +64,10 @@ public class TaskController {
     }
 
     @GetMapping("/detail")
-    public Result get(@RequestParam Long taskId) throws IOException {
-        Task task = taskService.getById(taskId);
+    public Result get(@RequestParam Long task_id) throws IOException {
+        Task task = taskService.getById(task_id);
+        User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        Long user_id = user.getId();
 
         long nowSecond = task.getStartTime().toEpochSecond(ZoneOffset.ofHours(0));
         long endSecond = task.getEndTime().toEpochSecond(ZoneOffset.ofHours(0));
@@ -74,23 +84,54 @@ public class TaskController {
 
         taskDetail.setTrainingTime(duration);
         //...
-        String path = "/";
+        String path = "/var/doc/usr" + user_id + "/task/" + task_id + "/eval_results.json";
         File file = new File(path);
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        String training_output = "";
-        StringBuffer sb = new StringBuffer();
-        while ((training_output = br.readLine()) != null) {
-            sb.append(training_output);
-        }
-        br.close();
+        String jsonData = getStr(file);
 
-        System.out.println(sb);
-//        taskDetail.setAccuracy();
-
-        System.out.println();
+        JSONObject parse = (JSONObject) JSONObject.parse(jsonData);
+        System.out.println(parse.toJSONString());
         return Result.succ(
-                taskDetail
+                MapUtil.builder()
+                        .put("detail", parse)
+                        .map()
         );
     }
 
+    @GetMapping("/getByName")
+    public Result getByName(@RequestParam String name) {
+        List<Task> list = taskService.getByName(name);
+        return Result.succ(list);
+    }
+
+    @GetMapping("/getRunning")
+    public Result getRunning() {
+        List<Task> list = taskService.getRunning();
+        return Result.succ(list);
+    }
+
+    @GetMapping("/getComplete")
+    public Result getComplete() {
+        List<Task> list = taskService.getComplete();
+        return Result.succ(list);
+    }
+
+    public String getStr(File jsonFile) {
+        String jsonStr = "";
+        try {
+            FileReader fileReader = new FileReader(jsonFile);
+            Reader reader = new InputStreamReader(new FileInputStream(jsonFile), "utf-8");
+            int ch = 0;
+            StringBuffer sb = new StringBuffer();
+            while ((ch = reader.read()) != -1) {
+                sb.append((char) ch);
+            }
+            fileReader.close();
+            reader.close();
+            jsonStr = sb.toString();
+            return jsonStr;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

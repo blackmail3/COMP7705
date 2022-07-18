@@ -9,4 +9,5 @@ import java.util.List;
 public interface ModelService extends IService<Model> {
     List<Model> getByuserId();
     ModelConfig getModelConfig(Long model_id);
+    List<Model> getByName(String name);
 }

@@ -8,7 +8,12 @@ import java.util.List;
 
 public interface TaskService extends IService<Task> {
     List<Task> getByuserId();
+
     Task getByTaskId(Long id);
-//    Long getDatasetId();
-//    Long getModelId();
+
+    List<Task> getByName(String name);
+
+    List<Task> getRunning();
+
+    List<Task> getComplete();
 }

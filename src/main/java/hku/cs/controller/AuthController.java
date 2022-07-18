@@ -20,11 +20,12 @@ import java.util.Map;
 
 /**
  * Captcha generation class
+ *
  * @author xxy
  */
 @RestController
 @CrossOrigin
-public class AuthController extends BaseController{
+public class AuthController extends BaseController {
 
     @Autowired
     Producer producer;
@@ -43,8 +44,8 @@ public class AuthController extends BaseController{
 
 //        producer.createImage("123");
 
-        System.out.println("key:"+key);
-        System.out.println("code:"+code);
+        System.out.println("key:" + key);
+        System.out.println("code:" + code);
 
         BufferedImage image = producer.createImage(code);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -67,6 +68,7 @@ public class AuthController extends BaseController{
 
     /**
      * Interface to get user information
+     *
      * @param principal
      * @return
      */

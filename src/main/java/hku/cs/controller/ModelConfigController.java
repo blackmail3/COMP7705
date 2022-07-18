@@ -25,17 +25,17 @@ public class ModelConfigController {
     UserService userService;
 
     @PostMapping("/add")
-    public Result add(@RequestBody ModelConfig modelConfig){
+    public Result add(@RequestBody ModelConfig modelConfig) {
         User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         Long user_id = user.getId();
         System.out.println(modelConfig.toString());
         Object ob = JSONUtil.parse(modelConfig);
-        redisUtil.set("model_config_"+user_id, ob.toString());
+        redisUtil.set("model_config_" + user_id, ob.toString());
         return Result.succ(modelConfig);
     }
 
     @GetMapping("/{modelId}")
-    public Result getConfig(@PathVariable Long modelId){
+    public Result getConfig(@PathVariable Long modelId) {
         ModelConfig modelConfig = modelConfigService.getByModelId(modelId);
         return Result.succ(modelConfig);
     }

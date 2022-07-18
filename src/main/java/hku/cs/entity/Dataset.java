@@ -54,8 +54,8 @@ public class Dataset implements Serializable {
 
     private Long datasetGroupId;
 
-    @ApiModelProperty("'single'/'dual'")
-    private String type;
+    @ApiModelProperty("'single':0/'dual':1")
+    private int type;
 
     private String label;
 

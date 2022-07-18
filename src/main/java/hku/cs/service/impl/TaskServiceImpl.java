@@ -26,22 +26,37 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     public List<Task> getByuserId() {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userService.getByUsername(username);
-        System.out.println("userid "+user.getId());
-        return this.list(new QueryWrapper<Task>().eq("user_id",user.getId()));
+        System.out.println("user_id " + user.getId());
+        return this.list(new QueryWrapper<Task>().eq("user_id", user.getId()));
     }
 
     @Override
     public Task getByTaskId(Long id) {
-        return this.getOne(new QueryWrapper<Task>().eq("task_id",id));
+        return this.getOne(new QueryWrapper<Task>().eq("task_id", id));
     }
 
-    //    @Override
-//    public Long getDatasetId() {
-//        return this.getById();
-//    }
-//
-//    @Override
-//    public Long getModelId() {
-//        return null;
-//    }
+    @Override
+    public List<Task> getByName(String name) {
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userService.getByUsername(username);
+        System.out.println("user_id " + user.getId());
+        return this.list(new QueryWrapper<Task>().eq("user_id", user.getId()).like("task_name", name));
+    }
+
+    @Override
+    public List<Task> getRunning() {
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userService.getByUsername(username);
+        System.out.println("user_id " + user.getId());
+        return this.list(new QueryWrapper<Task>().eq("user_id", user.getId()).like("status", 1));
+    }
+
+    @Override
+    public List<Task> getComplete() {
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userService.getByUsername(username);
+        System.out.println("user_id " + user.getId());
+        return this.list(new QueryWrapper<Task>().eq("user_id", user.getId()).eq("status", 2));
+    }
+
 }

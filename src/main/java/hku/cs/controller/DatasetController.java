@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -39,16 +40,11 @@ public class DatasetController {
         Object ob = redisUtil.get("datasetPath_" + userId);
         System.out.println(ob.toString());
         dataset.setPath(ob.toString());
-//        if (dataset.getType().equals("single")){
-//
-//        }else if (dataset.getType().equals("dual")){
-//
-//        }
-
-//        dataSet.setDatasetId(Long.parseLong(date+fiveNumber));
         dataset.setDatasetId(Long.parseLong(date + fiveNumber));
+        dataset.setStatus(1);
+        dataset.setUpdateTime(LocalDateTime.now());
         datasetService.save(dataset);
-
+        System.out.println(dataset.toString());
         return Result.succ(dataset);
     }
 
@@ -58,8 +54,27 @@ public class DatasetController {
         return Result.succ(list);
     }
 
-//    @GetMapping("/detail")
-//    public Result get(){
-//
-//    }
+    @GetMapping("/getById")
+    public Result getById(@RequestParam Long dataset_id) {
+        Dataset dataset = datasetService.getByDatasetId(dataset_id);
+        return Result.succ(dataset);
+    }
+
+    @GetMapping("/getByName")
+    public Result getByName(@RequestParam String name) {
+        List<Dataset> list = datasetService.getByName(name);
+        return Result.succ(list);
+    }
+
+    @PutMapping("/edit")
+    public Result edit(@RequestBody Dataset dataset) {
+        boolean res = datasetService.updateById(dataset);
+        return Result.succ(dataset);
+    }
+
+    @DeleteMapping("/del/{dataset_id}")
+    public Result del(@PathVariable Long dataset_id) {
+        datasetService.removeById(dataset_id);
+        return Result.succ(dataset_id);
+    }
 }

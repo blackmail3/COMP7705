@@ -8,4 +8,5 @@ import java.util.List;
 public interface DatasetService extends IService<Dataset> {
     List<Dataset> getByuserId();
     Dataset getByDatasetId(Long id);
+    List<Dataset> getByName(String dataset_name);
 }

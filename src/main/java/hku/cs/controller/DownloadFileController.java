@@ -1,6 +1,8 @@
 package hku.cs.controller;
 
-import cn.hutool.core.lang.copier.SrcToDestCopier;
+import cn.hutool.core.codec.Base64Encoder;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.IoUtil;
 import hku.cs.common.lang.Result;
 import hku.cs.service.TaskService;
 import hku.cs.service.UserService;
@@ -11,13 +13,14 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 // TODO: 2022/7/12 click download button and download the log file
 @RestController
-//@RequestMapping("/api/v1.0/download")
+@RequestMapping("/api/v1.0/download")
 @CrossOrigin
 public class DownloadFileController {
     @Autowired
@@ -25,9 +28,9 @@ public class DownloadFileController {
     @Autowired
     TaskService taskService;
 
-    @GetMapping("/download/{task_id}")
+    @GetMapping("/log/{task_id}")
     @ResponseBody
-    public Result download(HttpServletRequest request, HttpServletResponse response, @RequestParam Long task_id) {
+    public Result download(HttpServletRequest request, HttpServletResponse response, @PathVariable Long task_id) {
 //        String filePath = "D:\\0\\HKU\\proj\\var\\doc\\usr1\\model_config\\model_config_15.json";
 //        String fileName = "model_config_15.json";
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -42,6 +45,7 @@ public class DownloadFileController {
             response.reset();
             response.setContentType("application/octet-stream");
             response.addHeader("Content-Disposition", "attachment;filename=" + new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1));
+            response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
             response.addHeader("Content-Length", "" + bytes.length);
             os.write(bytes);
             os.flush();
@@ -50,6 +54,17 @@ public class DownloadFileController {
             e.printStackTrace();
             return Result.succ("Download file error...");
         }
+    }
+
+    @GetMapping("/heatmap/{task_id}")
+    @ResponseBody
+    public Result heatmap(@PathVariable Long task_id) throws FileNotFoundException {
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long user_id = userService.getByUsername(username).getId();
+        File file = new File("/var/doc/usr" + user_id + "/task/" + task_id + "/heatmap.png");
+        byte[] fileByte = IoUtil.readBytes(new FileInputStream(file));
+        String encode = "data:image/png;base64," + Base64Encoder.encode(fileByte);
+        return Result.succ(encode);
     }
 
 }

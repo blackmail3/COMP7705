@@ -3,6 +3,7 @@ package hku.cs.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import hku.cs.common.lang.Result;
+import hku.cs.entity.Dataset;
 import hku.cs.entity.Model;
 import hku.cs.entity.ModelConfig;
 import hku.cs.entity.User;
@@ -36,26 +37,25 @@ public class ModelController {
     RedisUtil redisUtil;
 
     @PostMapping("/add")
-    public Result add(@RequestBody Model model){
+    public Result add(@RequestBody Model model) {
         User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         Long userid = user.getId();
         model.setUserId(userid);
         model.setUpdateTime(LocalDateTime.now());
         modelService.saveOrUpdate(model);
-        Object object = redisUtil.get("model_config_"+userid);
+        Object object = redisUtil.get("model_config_" + userid);
         ModelConfig modelConfig = new ModelConfig(); // default value
 //        System.out.println(object.toString());
 
-        if (object==null) {
+        if (object == null) {
             modelConfig.setModelId(model.getModelId());
             modelConfigService.save(modelConfig);
-        }
-        else{
+        } else {
             modelConfig = JSON.parseObject((String) object, ModelConfig.class);
             modelConfig.setModelId(model.getModelId());
             modelConfigService.save(modelConfig);
         }
-        redisUtil.del("model_config_"+userid);
+        redisUtil.del("model_config_" + userid);
         ArrayList<Object> modelList = new ArrayList<>();
         modelList.add(model);
         modelList.add(modelConfig);
@@ -63,22 +63,27 @@ public class ModelController {
     }
 
     @GetMapping("/list")
-    public Result models(){
+    public Result models() {
         List<Model> models = modelService.getByuserId();
         return Result.succ(models);
     }
 
     @DeleteMapping("/del")
-    public Result del(@RequestParam Long modelId){
+    public Result del(@RequestParam Long modelId) {
         boolean del = modelService.removeById(modelId);
         return Result.succ(del);
     }
 
     @GetMapping("/detail")
-    public Result get(@RequestParam Long modelId){
+    public Result get(@RequestParam Long modelId) {
         Model model = modelService.getById(modelId);
         return Result.succ(model);
     }
 
+    @GetMapping("/getByName")
+    public Result getByName(@RequestParam String name) {
+        List<Model> list = modelService.getByName(name);
+        return Result.succ(list);
+    }
 
 }

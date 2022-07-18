@@ -37,4 +37,11 @@ public class ModelServiceImpl extends ServiceImpl<ModelMapper, Model> implements
     public ModelConfig getModelConfig(Long model_id) {
         return modelConfigService.getOne(new QueryWrapper<ModelConfig>().eq("model_id", model_id));
     }
+
+    @Override
+    public List<Model> getByName(String name) {
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userService.getByUsername(username);
+        return this.list(new QueryWrapper<Model>().eq("user_id",user.getId()).like("model_name", name));
+    }
 }

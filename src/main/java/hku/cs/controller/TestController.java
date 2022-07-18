@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+
 @RestController
 public class TestController {
     @Autowired
@@ -20,6 +22,7 @@ public class TestController {
 
     /**
      * password generator - white list
+     *
      * @return encoded password
      */
     @GetMapping("/test")
@@ -46,22 +49,23 @@ public class TestController {
     }
 
     @PostMapping("/train")
-    public Result train(@RequestParam String status, @RequestParam String task_id){
+    public Result train(@RequestParam String status, @RequestParam String task_id) {
         Long tid = Long.parseLong(task_id);
         // Receive algorithm side message...
         System.out.println(tid);
         Task task = taskService.getById(tid);
-        if (task==null){
+        if (task == null) {
             return Result.fail("fail...");
         }
         if (status.equals("finish")) {
             task.setStatus(2);
-        }else {
+        } else {
             // if training fail...
             task.setStatus(3);
         }
-        taskService.updateById(taskService.getById(tid));
-
+        task.setEndTime(LocalDateTime.now());
+        // TODO: 2022/7/19
+        taskService.updateById(task);
         return Result.succ(status);
     }
 }

@@ -30,4 +30,11 @@ public class DatasetServiceImpl extends ServiceImpl<DatasetMapper, Dataset> impl
     public Dataset getByDatasetId(Long id) {
         return this.getOne(new QueryWrapper<Dataset>().eq("dataset_id",id));
     }
+
+    @Override
+    public List<Dataset> getByName(String dataset_name) {
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userService.getByUsername(username);
+        return this.list(new QueryWrapper<Dataset>().eq("user_id",user.getId()).like("name", dataset_name));
+    }
 }

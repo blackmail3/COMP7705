@@ -5,7 +5,11 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://60.205.197.119:3306/comp?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: root
-    password: 123456
+    password: xxyXXY
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      enabled: true
 #  security:
 #    user:
 #      name: user

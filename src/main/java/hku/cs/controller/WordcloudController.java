@@ -34,46 +34,66 @@ public class WordcloudController {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long user_id = userService.getByUsername(username).getId();
 
-        String runningFile = "/var/doc/process_input.py ";
+        String runningFile = "/root/back-end/pyFile/process_input.py ";
         String input_type = ""; // single or dual input
-        if (dataset.getType().equals("single")) {
+        if (dataset.getType() == 0) {
             input_type = "single ";
         } else
             input_type = "dual ";
         String orgData = dataset.getPath() + " ";
-        String wordCount = 50 + " ";
-        String savePath = "/var/doc/usr" + user_id + "/dataset" + dataset_id;
+        String wordCount = "50";
+        String savePath = "/var/doc/usr" + user_id + "/jsonfile" + dataset_id;
         File file = new File(savePath);
         if (!file.exists())
             file.mkdir();
-
+        savePath += "/word_result.json ";
         String command = "python3 " + runningFile + input_type + orgData + savePath + wordCount;
+
+        // table presentation
+        String runningFile_table = "/root/back-end/pyFile/csv_reader.py ";
+        String filepath_table = dataset.getPath() + " ";
+        String result_savepath_table = "/var/doc/usr" + user_id + "/jsonfile" + dataset_id + "/table_result.json ";
+        String max_columns_table = "10";
+        String command_table = "python3 " + runningFile_table + filepath_table + result_savepath_table + max_columns_table;
+
 
         try {
             Process proc = Runtime.getRuntime().exec(command);
+            Process proc_table = Runtime.getRuntime().exec(command_table);
             // test for the connection
             BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            BufferedReader in_table = new BufferedReader(new InputStreamReader(proc_table.getInputStream()));
             String line = null;
             while ((line = in.readLine()) != null) {
                 System.out.println(line);
             }
+            while ((line = in_table.readLine()) != null) {
+                System.out.println(line);
+            }
             in.close();
             proc.waitFor();
+            in_table.close();
+            proc_table.waitFor();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
 
-        return Result.succ(savePath);
+        return Result.succ(
+                MapUtil.builder()
+                        .put("words", savePath)
+                        .put("table", result_savepath_table)
+                        .map()
+        );
     }
 
     @GetMapping("/getjson/{dataset_id}")
-    public Result getjson(@PathVariable Long dataset_id){
+    public Result getjson(@PathVariable Long dataset_id) {
         Dataset dataset = datasetService.getById(dataset_id);
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long user_id = userService.getByUsername(username).getId();
 
         // TODO: 2022/7/13 Path
-        String fileName = "/var/doc/usr" + user_id + "/dataset" + dataset_id;
+        String fileName = "/var/doc/usr" + user_id + "/jsonfile" + dataset_id + "/word_result.json";
         File jsonFile = new File(fileName);
         String jsonData = getStr(jsonFile);
 
@@ -84,13 +104,23 @@ public class WordcloudController {
         JSONArray pie_res = parse.getJSONArray("pie_result");
         JSONArray violin_res = parse.getJSONArray("violin_result");
         System.out.println(pie_res);
+
+        //table
+        String fileName_table = "/var/doc/usr" + user_id + "/jsonfile" + dataset_id + "/table_result.json";
+        File jsonFile_table = new File(fileName_table);
+        String jsonData_table = getStr(jsonFile_table);
+
+        JSONObject parse_table = (JSONObject) JSONObject.parse(jsonData_table);
+
+        System.out.println(pie_res);
         return Result.succ(
                 MapUtil.builder()
                         .put("error_message", err)
                         .put("wc_result", wc_res)
                         .put("pie_result", pie_res)
                         .put("violin_result", violin_res)
-                        .build()
+                        .put("table_result", parse_table)
+                        .map()
         );
     }
 

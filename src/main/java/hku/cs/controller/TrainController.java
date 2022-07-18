@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/v1.0/train")
@@ -52,6 +53,7 @@ public class TrainController {
         PostUtil util = new PostUtil(fullPath, task_id);
         String res = util.sendPost();
         task.setStatus(1);
+        task.setStartTime(LocalDateTime.now());
         return Result.succ(res);
     }
 
@@ -64,7 +66,7 @@ public class TrainController {
      */
 //    @GetMapping("/train_task")
     // TODO: 2022/7/7 local test
-    public String Config2JsonFile_Train(@RequestParam String task_id) throws JsonProcessingException {
+    public String Config2JsonFile_Train(String task_id) throws JsonProcessingException {
         TrainJsonBean trainJsonBean = new TrainJsonBean();
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long user_id = userService.getByUsername(username).getId();
@@ -92,7 +94,7 @@ public class TrainController {
         // FIXME: 2022/7/7 confirm...
         trainJsonBean.setSrc_column1(dataset_train.getInput1());
         trainJsonBean.setTgt_column(dataset_train.getLabel());
-        if (dataset_train.getType().equals("dual")) {
+        if (dataset_train.getType() == 1) {
             trainJsonBean.setSrc_column2(dataset_train.getInput2());
         }
         trainJsonBean.setMax_seq_length(task.getMaxLength());
