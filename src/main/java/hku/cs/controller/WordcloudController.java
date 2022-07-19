@@ -27,8 +27,6 @@ public class WordcloudController {
     @Autowired
     UserService userService;
 
-    // TODO: 2022/7/7  local test...
-    @GetMapping("/gen/{dataset_id}")
     public Result getImg(@PathVariable Long dataset_id) {
         Dataset dataset = datasetService.getById(dataset_id);
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -47,6 +45,7 @@ public class WordcloudController {
         if (!file.exists())
             file.mkdir();
         savePath += "/word_result.json ";
+        System.out.println(orgData);
         String command = "python3 " + runningFile + input_type + orgData + savePath + wordCount;
 
         // table presentation
@@ -56,6 +55,8 @@ public class WordcloudController {
         String max_columns_table = "10";
         String command_table = "python3 " + runningFile_table + filepath_table + result_savepath_table + max_columns_table;
 
+        System.out.println("command:\t" + command);
+        System.out.println("command_table:\t" + command_table);
 
         try {
             Process proc = Runtime.getRuntime().exec(command);
@@ -86,23 +87,60 @@ public class WordcloudController {
         );
     }
 
+    // FIXME: 2022/7/19 generate
     @GetMapping("/getjson/{dataset_id}")
     public Result getjson(@PathVariable Long dataset_id) {
         Dataset dataset = datasetService.getById(dataset_id);
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long user_id = userService.getByUsername(username).getId();
 
-        // TODO: 2022/7/13 Path
         String fileName = "/var/doc/usr" + user_id + "/jsonfile" + dataset_id + "/word_result.json";
         File jsonFile = new File(fileName);
         String jsonData = getStr(jsonFile);
 
+        if (!jsonFile.exists()){
+            try{
+                getImg(dataset_id);
+            }catch(Exception e){
+                System.out.println("Exception:");
+                e.printStackTrace();
+                return Result.succ(
+                        MapUtil.builder()
+                                .put("error_message", "Invalid Dataset, please check!")
+                                .put("wc_result", new JSONArray())
+                                .put("pie_result", new JSONArray())
+                                .put("violin_result", new JSONArray())
+                                .put("table_result", new JSONArray())
+                                .map()
+                );
+            }
+        }
+
         JSONObject parse = (JSONObject) JSONObject.parse(jsonData);
+        if (parse == null) {
+            return Result.succ(
+                    MapUtil.builder()
+                            .put("error_message", "Data NOT Found")
+                            .put("wc_result", new JSONArray())
+                            .put("pie_result", new JSONArray())
+                            .put("violin_result", new JSONArray())
+                            .put("table_result", new JSONArray())
+                            .map()
+            );
+        }
         JSONArray err = parse.getJSONArray("error_message");
         System.out.println(err);
+        if (err == null)
+            err = new JSONArray();
         JSONArray wc_res = parse.getJSONArray("wc_result");
         JSONArray pie_res = parse.getJSONArray("pie_result");
         JSONArray violin_res = parse.getJSONArray("violin_result");
+        if (wc_res == null)
+            wc_res = new JSONArray();
+        if (pie_res == null)
+            pie_res = new JSONArray();
+        if (violin_res == null)
+            violin_res = new JSONArray();
         System.out.println(pie_res);
 
         //table

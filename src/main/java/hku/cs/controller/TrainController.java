@@ -44,7 +44,8 @@ public class TrainController {
         Task task = taskService.getByTaskId(Long.parseLong(task_id));
         String fullPath = "";
         // FIXME: 2022/7/7
-        if (task.getTaskType().equals("train")) {
+//        if (task.getTaskType().equals("train")) {
+        if (task.getTaskType() == 0) {
 //            fullPath
             fullPath = Config2JsonFile_Train(task_id);
         } else { // predict & eval

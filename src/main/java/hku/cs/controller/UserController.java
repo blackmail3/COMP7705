@@ -102,7 +102,9 @@ public class UserController {
     public Result home() {
         return Result.succ(MapUtil.builder()
                 .put("dataset", datasetService.count())
+                .put("data", datasetService.count() * 150)
                 .put("model", modelService.count())
+                .put("model_type", modelService.count() / 5 + 1)
                 .put("total_task", taskService.count())
                 .put("progress_task", taskService.getRunning().size())
                 .map());

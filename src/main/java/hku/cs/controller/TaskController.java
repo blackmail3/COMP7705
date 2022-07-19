@@ -13,17 +13,16 @@ import hku.cs.service.TaskService;
 import hku.cs.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.spring.web.json.Json;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1.0/task")
@@ -64,13 +63,24 @@ public class TaskController {
     }
 
     @GetMapping("/detail")
-    public Result get(@RequestParam Long task_id) throws IOException {
+    public Result getDetail(@RequestParam Long task_id) throws IOException {
         Task task = taskService.getById(task_id);
         User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         Long user_id = user.getId();
 
-        long nowSecond = task.getStartTime().toEpochSecond(ZoneOffset.ofHours(0));
-        long endSecond = task.getEndTime().toEpochSecond(ZoneOffset.ofHours(0));
+        System.out.println(task.toString());
+
+        long nowSecond = 0;
+        long endSecond = 0;
+        try {
+            nowSecond = task.getStartTime().toEpochSecond(ZoneOffset.ofHours(0));
+            endSecond = task.getEndTime().toEpochSecond(ZoneOffset.ofHours(0));
+        } catch (Exception e) {
+            System.out.println("Exception:");
+            e.printStackTrace();
+            task.setStartTime(LocalDateTime.MIN);
+            task.setEndTime(LocalDateTime.MAX);
+        }
         long absSeconds = Math.abs(nowSecond - endSecond);
 
         System.out.println(nowSecond + "||" + endSecond);
@@ -85,34 +95,52 @@ public class TaskController {
         taskDetail.setTrainingTime(duration);
         //...
         String path = "/var/doc/usr" + user_id + "/task/" + task_id + "/eval_results.json";
+//        String path = "eval_results.json";
         File file = new File(path);
         String jsonData = getStr(file);
 
-        JSONObject parse = (JSONObject) JSONObject.parse(jsonData);
-        System.out.println(parse.toJSONString());
+        JSONObject parse = new JSONObject();
+        try {
+            parse = (JSONObject) JSONObject.parse(jsonData);
+            System.out.println(parse.toJSONString());
+        } catch (Exception e) {
+            System.out.println("Exception:");
+            e.printStackTrace();
+            return Result.succ(
+                    MapUtil.builder()
+                            .put("start_time", task.getStartTime())
+                            .put("end_time", task.getStartTime())
+                            .put("duration", duration)
+                            .put("detail", new JSONObject())
+                            .map()
+            );
+        }
         return Result.succ(
                 MapUtil.builder()
+                        .put("start_time", task.getStartTime())
+                        .put("end_time", task.getStartTime())
+                        .put("duration", duration)
                         .put("detail", parse)
                         .map()
         );
     }
 
-    @GetMapping("/getByName")
-    public Result getByName(@RequestParam String name) {
-        List<Task> list = taskService.getByName(name);
-        return Result.succ(list);
-    }
-
-    @GetMapping("/getRunning")
-    public Result getRunning() {
-        List<Task> list = taskService.getRunning();
-        return Result.succ(list);
-    }
-
-    @GetMapping("/getComplete")
-    public Result getComplete() {
-        List<Task> list = taskService.getComplete();
-        return Result.succ(list);
+    // FIXME: 2022/7/19 interface
+    @GetMapping("/get")
+    public Result getByNameStatus(@RequestParam @Nullable String name, @RequestParam @Nullable String status) {
+        System.out.println("name:\t" + name);
+        System.out.println("status:\t" + status);
+        if (name == null || name.equals("")) {
+            name = "";
+        }
+        if (status == null || status.equals("")) {
+            status = "-1";
+        }
+        List<Task> list = taskService.getByName(name, Integer.parseInt(status));
+        if (list != null)
+            return Result.succ(list);
+        else
+            return Result.succ(new ArrayList<>());
     }
 
     public String getStr(File jsonFile) {

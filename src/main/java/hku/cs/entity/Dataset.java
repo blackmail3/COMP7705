@@ -1,5 +1,6 @@
 package hku.cs.entity;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
@@ -23,6 +24,7 @@ public class Dataset implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty("NOT necessary")
+    @TableId("dataset_id")
     private Long datasetId;
 
     private String name;

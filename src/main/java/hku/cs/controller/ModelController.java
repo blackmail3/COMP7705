@@ -3,15 +3,13 @@ package hku.cs.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import hku.cs.common.lang.Result;
-import hku.cs.entity.Dataset;
-import hku.cs.entity.Model;
-import hku.cs.entity.ModelConfig;
-import hku.cs.entity.User;
+import hku.cs.entity.*;
 import hku.cs.service.ModelConfigService;
 import hku.cs.service.ModelService;
 import hku.cs.service.UserService;
 import hku.cs.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -75,15 +73,27 @@ public class ModelController {
     }
 
     @GetMapping("/detail")
-    public Result get(@RequestParam Long modelId) {
+    public Result getById(@RequestParam Long modelId) {
         Model model = modelService.getById(modelId);
         return Result.succ(model);
     }
 
-    @GetMapping("/getByName")
-    public Result getByName(@RequestParam String name) {
-        List<Model> list = modelService.getByName(name);
-        return Result.succ(list);
+//    @GetMapping("/get")
+//    public Result get(@RequestParam String name) {
+//        List<Model> list = modelService.getByName(name);
+//        return Result.succ(list);
+//    }
+
+    @GetMapping("/get")
+    public Result getByIdName(@RequestParam @Nullable String model_id, @RequestParam @Nullable String name) {
+        if (model_id != null && !model_id.equals("")) {
+            Model model = modelService.getById(Long.parseLong(model_id));
+            return Result.succ(new ArrayList<>());
+        } else {
+            System.out.println(modelService.getByName(name).toString());
+            List<Model> list = new ArrayList<>(modelService.getByName(name));
+            return Result.succ(list);
+        }
     }
 
 }

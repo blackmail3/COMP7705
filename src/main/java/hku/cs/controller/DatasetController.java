@@ -1,5 +1,6 @@
 package hku.cs.controller;
 
+import cn.hutool.core.map.MapUtil;
 import hku.cs.common.lang.Result;
 import hku.cs.entity.Dataset;
 import hku.cs.entity.User;
@@ -7,12 +8,14 @@ import hku.cs.service.DatasetService;
 import hku.cs.service.UserService;
 import hku.cs.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -48,28 +51,35 @@ public class DatasetController {
         return Result.succ(dataset);
     }
 
-    @GetMapping("/list")
-    public Result list() {
-        List<Dataset> list = datasetService.getByuserId();
-        return Result.succ(list);
-    }
+//    @GetMapping("/list")
+//    public Result list() {
+//        List<Dataset> list = datasetService.getByuserId();
+//        return Result.succ(list);
+//    }
 
-    @GetMapping("/getById")
-    public Result getById(@RequestParam Long dataset_id) {
-        Dataset dataset = datasetService.getByDatasetId(dataset_id);
-        return Result.succ(dataset);
-    }
+    @GetMapping("/get")
+    public Result getByIdName(@RequestParam @Nullable String dataset_id, @RequestParam @Nullable String name) {
+        if (dataset_id != null && !dataset_id.equals("")) {
+            Dataset dataset = datasetService.getByDatasetId(Long.parseLong(dataset_id));
+            return Result.succ(new ArrayList<>());
+        } else {
+            System.out.println(datasetService.getByName(name).toString());
+            List<Dataset> list = new ArrayList<>(datasetService.getByName(name));
+            return Result.succ(list);
+        }
 
-    @GetMapping("/getByName")
-    public Result getByName(@RequestParam String name) {
-        List<Dataset> list = datasetService.getByName(name);
-        return Result.succ(list);
     }
 
     @PutMapping("/edit")
     public Result edit(@RequestBody Dataset dataset) {
+        dataset.setUpdateTime(LocalDateTime.now());
         boolean res = datasetService.updateById(dataset);
-        return Result.succ(dataset);
+        return Result.succ(
+                MapUtil.builder()
+                        .put("res", res)
+                        .put("dataset", dataset)
+                        .map()
+        );
     }
 
     @DeleteMapping("/del/{dataset_id}")

@@ -11,7 +11,7 @@ public interface TaskService extends IService<Task> {
 
     Task getByTaskId(Long id);
 
-    List<Task> getByName(String name);
+    List<Task> getByName(String name, int status);
 
     List<Task> getRunning();
 

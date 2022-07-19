@@ -1,8 +1,10 @@
 package hku.cs.entity;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -14,11 +16,13 @@ public class Task implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @TableId("task_id")
     private Long taskId;
 
     private String taskName;
 
-    private String taskType;
+    @ApiModelProperty("'training':0/'predict':1/'eval':2")
+    private int taskType;
 
     private String description;
 

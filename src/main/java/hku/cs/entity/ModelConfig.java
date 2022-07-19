@@ -21,6 +21,8 @@ public class ModelConfig implements Serializable {
 
     private String clsType = "fc";
 
+    private String lyrType = "";
+
     private String poolerType = "cls";
 
     private String activation = "gelu";

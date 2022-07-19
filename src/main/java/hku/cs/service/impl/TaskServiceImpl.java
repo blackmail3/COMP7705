@@ -36,11 +36,13 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     }
 
     @Override
-    public List<Task> getByName(String name) {
+    public List<Task> getByName(String name, int status) {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userService.getByUsername(username);
         System.out.println("user_id " + user.getId());
-        return this.list(new QueryWrapper<Task>().eq("user_id", user.getId()).like("task_name", name));
+        if (status != -1)
+            return this.list(new QueryWrapper<Task>().eq("user_id", user.getId()).like("task_name", name).eq("status", status));
+        else return this.list(new QueryWrapper<Task>().eq("user_id", user.getId()).like("task_name", name));
     }
 
     @Override

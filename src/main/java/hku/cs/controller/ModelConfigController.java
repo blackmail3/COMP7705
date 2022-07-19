@@ -3,6 +3,7 @@ package hku.cs.controller;
 
 import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
 import hku.cs.common.lang.Result;
 import hku.cs.entity.ModelConfig;
 import hku.cs.entity.User;
@@ -29,14 +30,27 @@ public class ModelConfigController {
         User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         Long user_id = user.getId();
         System.out.println(modelConfig.toString());
-        Object ob = JSONUtil.parse(modelConfig);
+        Object ob = new JSONObject();
+        try {
+            ob = JSONUtil.parse(modelConfig);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.succ("Insert data exception" + e.getMessage());
+        }
+        System.out.println(ob.toString());
         redisUtil.set("model_config_" + user_id, ob.toString());
         return Result.succ(modelConfig);
     }
 
     @GetMapping("/{modelId}")
     public Result getConfig(@PathVariable Long modelId) {
-        ModelConfig modelConfig = modelConfigService.getByModelId(modelId);
+        ModelConfig modelConfig = new ModelConfig();
+        try {
+            modelConfig = modelConfigService.getByModelId(modelId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.succ("Get data exception" + modelId);
+        }
         return Result.succ(modelConfig);
     }
 
