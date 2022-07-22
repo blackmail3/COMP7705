@@ -51,17 +51,12 @@ public class DatasetController {
         return Result.succ(dataset);
     }
 
-//    @GetMapping("/list")
-//    public Result list() {
-//        List<Dataset> list = datasetService.getByuserId();
-//        return Result.succ(list);
-//    }
-
     @GetMapping("/get")
     public Result getByIdName(@RequestParam @Nullable String dataset_id, @RequestParam @Nullable String name) {
+        System.out.println("GET dataset, ID" + dataset_id + ", NAME" + name);
         if (dataset_id != null && !dataset_id.equals("")) {
-            Dataset dataset = datasetService.getByDatasetId(Long.parseLong(dataset_id));
-            return Result.succ(new ArrayList<>());
+            Dataset dataset = datasetService.getById(Long.parseLong(dataset_id));
+            return Result.succ(dataset);
         } else {
             System.out.println(datasetService.getByName(name).toString());
             List<Dataset> list = new ArrayList<>(datasetService.getByName(name));

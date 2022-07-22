@@ -75,6 +75,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
 //        System.out.println();
 
+        http.authorizeRequests()
+		.antMatchers("/root/**","/var/**").permitAll();
+
         http.cors().and().csrf().disable()
                 // Login configuration
                 .formLogin()

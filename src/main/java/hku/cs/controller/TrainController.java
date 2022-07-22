@@ -19,9 +19,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.time.LocalDateTime;
 
-@RestController
-@RequestMapping("/api/v1.0/train")
-@CrossOrigin
+//@RestController
+//@RequestMapping("/api/v1.0/train")
+//@CrossOrigin
 public class TrainController {
     @Autowired
     UserService userService;

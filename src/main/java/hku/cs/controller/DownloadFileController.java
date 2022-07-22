@@ -36,6 +36,9 @@ public class DownloadFileController {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long user_id = userService.getByUsername(username).getId();
         String filePath = "/var/doc/usr" + user_id + "/task/" + task_id + "/log";
+        if (!new File(filePath).exists()){
+            filePath = "/var/doc/usr1/task/1/log";
+        }
         String fileName = user_id + "_" + task_id + "_" + "log";
         try (
                 InputStream is = this.getClass().getResourceAsStream(filePath);
@@ -56,7 +59,7 @@ public class DownloadFileController {
         }
     }
 
-    @GetMapping("/heatmap/{task_id}")
+//    @GetMapping("/heatmap/{task_id}")
     @ResponseBody
     public Result heatmap(@PathVariable Long task_id) throws FileNotFoundException {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

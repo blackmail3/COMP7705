@@ -37,8 +37,6 @@ public class DatasetServiceImpl extends ServiceImpl<DatasetMapper, Dataset> impl
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userService.getByUsername(username);
         System.out.println(user.toString());
-        System.out.println("getByName_dataset:" + user.getId());
-        System.out.println("dataset_name" + dataset_name);
         return this.list(new QueryWrapper<Dataset>().eq("user_id", user.getId()).like("name", dataset_name));
     }
 }

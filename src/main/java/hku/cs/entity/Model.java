@@ -30,13 +30,13 @@ public class Model implements Serializable {
 
     private String basicModel;
 
-    private String config;
-
     private String description;
 
     private LocalDateTime updateTime;
 
     private String initParam;
+
+    private String preTrainedModel;
 
     public static long getSerialVersionUID() {
         return serialVersionUID;
@@ -72,14 +72,6 @@ public class Model implements Serializable {
 
     public void setBasicModel(String basicModel) {
         this.basicModel = basicModel;
-    }
-
-    public String getConfig() {
-        return config;
-    }
-
-    public void setConfig(String config) {
-        this.config = config;
     }
 
     public String getDescription() {

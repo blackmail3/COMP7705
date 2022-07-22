@@ -35,7 +35,7 @@ public class ModelServiceImpl extends ServiceImpl<ModelMapper, Model> implements
 
     @Override
     public ModelConfig getModelConfig(Long model_id) {
-        return modelConfigService.getOne(new QueryWrapper<ModelConfig>().eq("model_id", model_id));
+        return modelConfigService.getByModelId(model_id);
     }
 
     @Override

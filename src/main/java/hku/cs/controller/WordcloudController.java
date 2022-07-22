@@ -87,7 +87,6 @@ public class WordcloudController {
         );
     }
 
-    // FIXME: 2022/7/19 generate
     @GetMapping("/getjson/{dataset_id}")
     public Result getjson(@PathVariable Long dataset_id) {
         Dataset dataset = datasetService.getById(dataset_id);

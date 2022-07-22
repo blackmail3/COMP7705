@@ -51,5 +51,7 @@ public class Task implements Serializable {
 
     private int batchSize;
 
+    private String testPath;
 
+    private String trainPath;
 }

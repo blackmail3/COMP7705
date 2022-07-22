@@ -1,5 +1,7 @@
 server:
   port: 8088
+  tomcat:
+    max-http-header-size: 81920
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -10,6 +12,11 @@ spring:
     multipart:
       max-file-size: 50MB
       enabled: true
+  mvc:
+    static-path-pattern: /getfile/**
+  web:
+    resources:
+      static-locations: file:/var/doc
 #  security:
 #    user:
 #      name: user
