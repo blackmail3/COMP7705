@@ -1,5 +1,7 @@
 package hku.cs.util;
 
+import hku.cs.entity.User;
+import hku.cs.service.UserService;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -8,10 +10,15 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class PostUtil {
     private String path;
     private String tid;
+
+    @Autowired
+    UserService userService;
 
     public PostUtil(String path, String tid) {
         this.path = path;
@@ -19,7 +26,9 @@ public class PostUtil {
     }
 
     //tbc: post err
-    public String sendPost(){
+    public String sendPost(Long user_id){
+//        User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+//        Long user_id = user.getId();
         String result="";
 //        String path = "args.json";
         HttpPost post = new HttpPost("http://127.0.0.1:9000/NLPServer/train");
@@ -31,7 +40,11 @@ public class PostUtil {
                     + this.path + "\","
                     + "\"task_id\":\""
                     + tid
-                    + "\"}";
+                    + "\","
+                    + "\"user_dir\":\""
+                    + "/var/doc/usr" + user_id + "/task/" + tid
+                    + "\"" +
+                    "}";
 //            String body = "{\"config_path\":\""
 //                    + "/root/TextCLS/config/args.json" + "\","
 //                    + "\"task_id\":\""

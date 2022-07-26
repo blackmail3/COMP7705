@@ -2,6 +2,8 @@ package hku.cs.entity;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * Model Config Entity Class
  * @author xxy
@@ -64,7 +66,7 @@ public class TrainJsonBean {
     private int num_train_epochs = 10;
     private int per_device_train_batch_size = 128;
     private int per_device_eval_batch_size = 128;
-    private double learning_rate = 5e-5;
+    private BigDecimal learning_rate = BigDecimal.valueOf(1e-5);
     private double warmup_ratio =0.1;
     private double weight_decay=0.01;
     private String evaluation_strategy = "epoch";
@@ -230,11 +232,11 @@ public class TrainJsonBean {
         this.per_device_eval_batch_size = per_device_eval_batch_size;
     }
 
-    public double getLearning_rate() {
+    public BigDecimal getLearning_rate() {
         return learning_rate;
     }
 
-    public void setLearning_rate(double learning_rate) {
+    public void setLearning_rate(BigDecimal learning_rate) {
         this.learning_rate = learning_rate;
     }
 

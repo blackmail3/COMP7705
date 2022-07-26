@@ -14,4 +14,9 @@ public class ModelConfigServiceImpl extends ServiceImpl<ModelConfigMapper, Model
     public ModelConfig getByModelId(Long ModelId) {
         return this.getOne(new QueryWrapper<ModelConfig>().eq("model_id", ModelId));
     }
+
+    @Override
+    public boolean updateByModelId(Long model_id, ModelConfig modelConfig) {
+        return this.update(modelConfig, new QueryWrapper<ModelConfig>().eq("model_id", model_id));
+    }
 }

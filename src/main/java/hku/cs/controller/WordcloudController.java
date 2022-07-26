@@ -32,7 +32,8 @@ public class WordcloudController {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long user_id = userService.getByUsername(username).getId();
 
-        String runningFile = "/root/back-end/pyFile/process_input.py ";
+//        String runningFile = "/root/back-end/pyFile/process_input.py ";
+        String runningFile = "/root/back-end/pyFile/input2pic.py ";
         String input_type = ""; // single or dual input
         if (dataset.getType() == 0) {
             input_type = "single ";
@@ -46,12 +47,20 @@ public class WordcloudController {
             file.mkdir();
         savePath += "/word_result.json ";
         System.out.println(orgData);
-        String command = "python3 " + runningFile + input_type + orgData + savePath + wordCount;
+//        String command = "python3 " + runningFile + input_type + orgData + savePath + wordCount;
+        int input1 = 0, input2 = 1, label = 2;
+        if (dataset.getType()==0)//single
+        {
+           input2 = -1;
+           label = 1;
+        }
+        String command = "python3 " + runningFile + orgData + savePath + wordCount + " " + input1 + " " + input2 + " " + label;
 
         // table presentation
         String runningFile_table = "/root/back-end/pyFile/csv_reader.py ";
         String filepath_table = dataset.getPath() + " ";
         String result_savepath_table = "/var/doc/usr" + user_id + "/jsonfile" + dataset_id + "/table_result.json ";
+        String path_table = "/var/doc/usr" + user_id + "/jsonfile" + dataset_id + "/table_result.json";
         String max_columns_table = "10";
         String command_table = "python3 " + runningFile_table + filepath_table + result_savepath_table + max_columns_table;
 
@@ -79,6 +88,9 @@ public class WordcloudController {
             e.printStackTrace();
         }
 
+//        if (!new File(path_table).exists())
+//            path_table = "/var/doc/usr1/jsonfile22071933723021/table_result.json";
+
         return Result.succ(
                 MapUtil.builder()
                         .put("words", savePath)
@@ -97,10 +109,10 @@ public class WordcloudController {
         File jsonFile = new File(fileName);
         String jsonData = getStr(jsonFile);
 
-        if (!jsonFile.exists()){
-            try{
+        if (!jsonFile.exists()) {
+            try {
                 getImg(dataset_id);
-            }catch(Exception e){
+            } catch (Exception e) {
                 System.out.println("Exception:");
                 e.printStackTrace();
                 return Result.succ(
@@ -140,16 +152,27 @@ public class WordcloudController {
             pie_res = new JSONArray();
         if (violin_res == null)
             violin_res = new JSONArray();
-        System.out.println(pie_res);
+//        System.out.println("WC" + wc_res);
+//        System.out.println("PIE" + pie_res);
+//        System.out.println("VIOLIN" + violin_res);
 
         //table
         String fileName_table = "/var/doc/usr" + user_id + "/jsonfile" + dataset_id + "/table_result.json";
         File jsonFile_table = new File(fileName_table);
-        String jsonData_table = getStr(jsonFile_table);
 
-        JSONObject parse_table = (JSONObject) JSONObject.parse(jsonData_table);
+        JSONObject parse_table;
 
-        System.out.println(pie_res);
+        String path_table = "/var/doc/usr" + user_id + "/jsonfile" + dataset_id + "/table_result.json";
+        if (!new File(path_table).exists()) {
+            path_table = "/var/doc/usr1/jsonfile22071933723021/table_result.json";
+            String tmp = getStr(new File(path_table));
+            parse_table = (JSONObject) JSONObject.parse(tmp);
+        } else {
+            String jsonData_table = getStr(jsonFile_table);
+            parse_table = (JSONObject) JSONObject.parse(jsonData_table);
+        }
+
+        System.out.println("TABLE" + parse_table);
         return Result.succ(
                 MapUtil.builder()
                         .put("error_message", err)

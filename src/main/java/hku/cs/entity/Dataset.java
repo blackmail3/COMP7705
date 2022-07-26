@@ -51,11 +51,6 @@ public class Dataset implements Serializable {
 
     private LocalDateTime updateTime;
 
-    @ApiModelProperty("NOT necessary")
-    private String version;
-
-    private Long datasetGroupId;
-
     @ApiModelProperty("'single':0/'dual':1")
     private int type;
 

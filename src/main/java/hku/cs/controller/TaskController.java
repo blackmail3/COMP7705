@@ -1,5 +1,6 @@
 package hku.cs.controller;
 
+import cn.hutool.cache.impl.FIFOCache;
 import cn.hutool.core.codec.Base64Encoder;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.map.MapUtil;
@@ -16,6 +17,7 @@ import hku.cs.service.TaskService;
 import hku.cs.service.UserService;
 import hku.cs.util.JsonFormatTool;
 import hku.cs.util.PostUtil;
+import hku.cs.util.RedisUtil;
 import io.swagger.annotations.ApiOperation;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -28,6 +30,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +39,7 @@ import springfox.documentation.spring.web.json.Json;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.lang.reflect.GenericDeclaration;
+import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -43,6 +47,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 @RestController
@@ -57,6 +62,10 @@ public class TaskController {
     DatasetService datasetService;
     @Autowired
     ModelService modelService;
+    @Autowired
+    RedisUtil redisUtil;
+    @Autowired
+    RedisTemplate redisTemplate;
     private final static SimpleDateFormat yyMMdd = new SimpleDateFormat("yyMMdd");
 
     @DeleteMapping("/del/{task_id}")
@@ -68,7 +77,6 @@ public class TaskController {
     @PostMapping("/add")
     public Result add(@RequestBody Task task) {
         System.out.println("model:" + task.getModelId());
-        System.out.println(task.getDatasetIdTrain());
         String timeMillis = String.valueOf(System.currentTimeMillis());
         String fiveNumber = timeMillis.substring(timeMillis.length() - 8);
         String date = yyMMdd.format(new Date());
@@ -80,7 +88,7 @@ public class TaskController {
         if (task.getDatasetIdTest() != null) {
             task.setTestPath(datasetService.getById(task.getDatasetIdTest()).getPath());
         }
-        if (task.getDatasetIdTrain() != null) {
+        if (task.getDatasetIdTrain() != null && task.getTaskType() == 0) {
             task.setTrainPath(datasetService.getById(task.getDatasetIdTrain()).getPath());
         }
         System.out.println("AFTER" + task.toString());
@@ -102,10 +110,11 @@ public class TaskController {
             nowSecond = task.getStartTime().toEpochSecond(ZoneOffset.ofHours(0));
             endSecond = task.getEndTime().toEpochSecond(ZoneOffset.ofHours(0));
         } catch (Exception e) {
-            System.out.println("Exception:");
-            e.printStackTrace();
-            task.setStartTime(LocalDateTime.MIN);
-            task.setEndTime(LocalDateTime.MAX);
+            System.out.println("Exception:" + "Unfinished...! End time NOT set!");
+//            e.printStackTrace();
+//            task.setStartTime(LocalDateTime.MIN);
+//            task.setEndTime(LocalDateTime.now());
+            endSecond = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(0));
         }
         long absSeconds = Math.abs(nowSecond - endSecond);
 
@@ -125,18 +134,31 @@ public class TaskController {
         switch (task.getTaskType()) {
             // train train_result.json eval_result.json log
             case 0:
-                parse.put("tensorboard_port", CheckPort(task_id));
+                boolean flag = false;
+                for (int i = 6006; i <= 6016; i++) {
+                    if (redisUtil.get("port" + i + "_" + task_id) != null) {
+                        parse.put("tensorboard_port", "http://60.205.197.119:" + i);
+                        flag = true;
+                        break;
+                    }
+                }
+                if (!flag)
+                    parse.put("tensorboard_port", "http://60.205.197.119:" + CheckPort(task_id));
                 return Result.succ(
                         MapUtil.builder()
                                 .put("start_time", task.getStartTime())
                                 .put("end_time", task.getStartTime())
                                 .put("duration", duration)
                                 .put("detail_train", parse)
+//                                .put()
                                 .map()
                 );
-            // predict predict.json
+            // predict predict.csv
             case 1:
                 path = "/var/doc/usr" + user_id + "/task/" + task_id + "/predict.csv";
+                if (!new File("/var/doc/usr" + user_id + "/task/" + task_id).exists()) {
+                    new File("/var/doc/usr" + user_id + "/task/" + task_id).mkdir();
+                }
                 File predict_json = new File(path);
                 if (!predict_json.exists()) {
                     path = "/root/TextCLS/data/sample_output/prediction_output/predict.csv";
@@ -147,6 +169,9 @@ public class TaskController {
                 String runningFile_table = "/root/back-end/pyFile/csv_reader.py ";
                 String filepath_table = predict_json.getPath() + " ";
                 String result_savepath_table = "/var/doc/usr" + user_id + "/task/" + task_id + "/table_result.json ";
+//                if (!new File("/var/doc/usr" + user_id + "/task/" + task_id + "/table_result.json").exists()) {
+//
+//                }
                 String max_columns_table = "10";
                 String command_table = "python3 " + runningFile_table + filepath_table + result_savepath_table + max_columns_table;
 
@@ -164,11 +189,20 @@ public class TaskController {
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
+
                 String fileName_table = "/var/doc/usr" + user_id + "/task/" + task_id + "/table_result.json";
                 File jsonFile_table = new File(fileName_table);
-                String jsonData_table = getStr(jsonFile_table);
 
-                JSONObject parse_table = (JSONObject) JSONObject.parse(jsonData_table);
+                JSONObject parse_table;
+
+                if (!new File(fileName_table).exists()) {
+                    String path_table = "/var/doc/usr1/task/1/predict.csv";
+                    String tmp = getStr(new File(path_table));
+                    return Result.succ("Parse csv to json failed!");
+                } else {
+                    String jsonData_table = getStr(jsonFile_table);
+                    parse_table = (JSONObject) JSONObject.parse(jsonData_table);
+                }
                 // ---------------------------------------------------------------
                 return Result.succ(
                         MapUtil.builder()
@@ -214,7 +248,7 @@ public class TaskController {
 
                 InetAddress inetAddress = InetAddress.getLocalHost();
                 String ip = inetAddress.getHostAddress();
-                String heatmapURL = "60.205.197.119:8088" + "/getfile" + heatmap(task_id);
+                String heatmapURL = "http://60.205.197.119:8088" + "/getfile" + heatmap(task_id);
 
                 return Result.succ(
                         MapUtil.builder()
@@ -222,7 +256,7 @@ public class TaskController {
                                 .put("end_time", task.getStartTime())
                                 .put("duration", duration)
                                 .put("detail_eval", parse)
-                                .put("log", logfile.getPath())
+//                                .put("log", logfile.getPath())
                                 .put("heatmap", heatmapURL)
                                 .map()
                 );
@@ -248,6 +282,15 @@ public class TaskController {
             status = "-1";
         }
         List<Task> list = taskService.getByName(name, Integer.parseInt(status));
+        if (list != null)
+            return Result.succ(list);
+        else
+            return Result.succ(new ArrayList<>());
+    }
+
+    @GetMapping("/get_train_task")
+    public Result getTrainTask() {
+        List<Task> list = taskService.getByType(0);
         if (list != null)
             return Result.succ(list);
         else
@@ -282,20 +325,28 @@ public class TaskController {
         //task->model->path
         Task task = taskService.getByTaskId(Long.parseLong(task_id));
         String fullPath = "";
+        User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        Long user_id = user.getId();
         // FIXME: 2022/7/7
 //        if (task.getTaskType().equals("train")) {
-        if (task.getTaskType() == 0) {
+        try {
+            if (task.getTaskType() == 0) {
 //            fullPath
-            fullPath = Config2JsonFile_Train(task_id);
-        } else { // predict & eval
-            fullPath = Config2JsonFile_other(task_id);
+                fullPath = Config2JsonFile_Train(task_id);
+            } else { // predict & eval
+                fullPath = Config2JsonFile_other(task_id);
+            }
+            PostUtil util = new PostUtil(fullPath, task_id);
+            System.out.println("BEFORE SENDING..." + fullPath + " TASK" + task_id);
+            String res = util.sendPost(user_id);
+            task.setStatus(1);
+            task.setStartTime(LocalDateTime.now());
+            taskService.updateById(task);
+            return Result.succ(res);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.succ(e);
         }
-        PostUtil util = new PostUtil(fullPath, task_id);
-        String res = util.sendPost();
-        task.setStatus(1);
-        task.setStartTime(LocalDateTime.now());
-        taskService.updateById(task);
-        return Result.succ(res);
     }
 
 
@@ -355,8 +406,7 @@ public class TaskController {
         trainJsonBean.setNum_train_epochs(task.getEpoch());
         trainJsonBean.setPer_device_train_batch_size(task.getBatchSize());
         trainJsonBean.setPer_device_eval_batch_size(task.getBatchSize());
-        trainJsonBean.setLearning_rate(task.getLearningRate());
-
+        trainJsonBean.setLearning_rate(BigDecimal.valueOf(Double.parseDouble(task.getLearningRate())));
         // fix value
         trainJsonBean.setEvaluation_strategy("epoch");
         trainJsonBean.setLoad_best_model_at_end(true);
@@ -372,7 +422,7 @@ public class TaskController {
         // Displaying Java object into a JSON string
         System.out.println("json:" + jsonStr);
         String filename = "model_config_" + task_id;
-        String fullPath = createJsonFile(jsonStr, "/var/doc/usr" + user_id + "/model_config/", filename);
+        String fullPath = createJsonFile(jsonStr, "/var/doc/usr" + user_id + "/model_config", filename);
         return fullPath;
     }
 
@@ -389,7 +439,11 @@ public class TaskController {
         ModelConfig modelConfig = modelService.getModelConfig(model_id);
 
         System.out.println(model.toString());
-        evalJsonBean.setModel_name_or_path(model.getBasicModel());
+        // Task_id == dataset_id_train
+//        Task task_train = taskService.getByTaskId(task.getDatasetIdTrain());
+        Task task_train = taskService.getByTaskId(task.getDatasetIdTrainTask());
+        String output_dir = "/var/doc/usr" + user_id + "/task/" + task_train.getTaskId();
+        evalJsonBean.setModel_name_or_path(output_dir);
 
         // From model_config
         System.out.println(modelConfig.toString());
@@ -421,7 +475,7 @@ public class TaskController {
         System.out.println("json:" + jsonStr);
         String filename = "model_config_" + task_id;
         // For win test
-        String fullPath = createJsonFile(jsonStr, "/var/doc/usr" + user_id + "/model_config/", filename);
+        String fullPath = createJsonFile(jsonStr, "/var/doc/usr" + user_id + "/model_config", filename);
         return fullPath;
     }
 
@@ -502,11 +556,18 @@ public class TaskController {
                 System.out.println("Check port...");
 //                skt = new Socket(host, i);
                 HttpPost post = new HttpPost("http://127.0.0.1:9000/NLPServer/tensorboard");
-                if (isPortUsing("http://127.0.0.1", i)) {
+//                if (isPortUsing("http://127.0.0.1", i)) {
+//                    continue;
+//                }
+                //set redis cache
+
+                Object o = redisUtil.get("port" + i);
+                if (o != null)
                     continue;
-                }
+                redisTemplate.opsForValue().set("port" + i, i, 600, TimeUnit.SECONDS);
+                redisTemplate.opsForValue().set("port" + i + "_" + task_id, i, 600, TimeUnit.SECONDS);
                 //Set request time
-                RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(1800).setConnectTimeout(1800).build();
+                RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(900).setConnectTimeout(900).build();
                 post.setConfig(requestConfig);
                 try {
                     User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
@@ -516,7 +577,7 @@ public class TaskController {
                         body = "{\"port\":\""
                                 + i + "\","
                                 + "\"user_dir\":\""
-                                + "/var/doc/usr" + userid + "/task/" + task_id + "/tensorboard"
+                                + "/var/doc/usr" + userid + "/task/" + task_id + "/"
 ////                            + task_id + "\","
 //                            + "/root/TextCLS\","
 //                            + "\"task_id\":\""
@@ -528,14 +589,14 @@ public class TaskController {
                                 + "\"user_dir\":\""
 //                                + "/var/doc/usr" + userid + "/task/" + task_id + "/tensorboard"
 ////                            + task_id + "\","
-                                + "/root/TextCLS\","
+                                + "/root/TextCLS/output\","
                                 + "\"task_id\":\""
                                 + task_id
                                 + "\"}";
                     }
+                    System.out.println(body);
                     post.setEntity(new StringEntity(body));
                     post.setHeader("Content-type", "application/json");
-                    System.out.println(body);
                     System.out.println(post.getURI());
                     CloseableHttpClient client = HttpClients.createDefault();
                     CloseableHttpResponse response = client.execute(post);
@@ -543,13 +604,12 @@ public class TaskController {
                     System.out.println(EntityUtils.toString(entity, "UTF-8"));
                     return 6016;
                 } catch (Exception e1) {
-                    e1.printStackTrace();
+                    System.out.println("NOT USE! SOCKET TIME OUT!" + "PORT" + i);
                 }
                 return i;
             } catch (UnknownError e) {
                 System.out.println("Exception occurred" + e);
                 break;
-            } catch (IOException e) {
             }
         }
         return -1;

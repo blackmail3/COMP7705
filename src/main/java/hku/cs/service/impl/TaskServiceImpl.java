@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Service
@@ -61,4 +62,11 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         return this.list(new QueryWrapper<Task>().eq("user_id", user.getId()).eq("status", 2));
     }
 
+    @Override
+    public List<Task> getByType(int type) {
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userService.getByUsername(username);
+        System.out.println("user_id " + user.getId());
+        return this.list(new QueryWrapper<Task>().eq("user_id", user.getId()).eq("task_type", type));
+    }
 }

@@ -58,13 +58,53 @@ public class ModelController {
 
         if (config == null) {
             modelConfig.setModelId(model.getModelId());
-            modelConfigService.save(modelConfig);
+            modelConfigService.saveOrUpdate(modelConfig);
         } else {
             System.out.println(config.toString());
 //            Config config = JSON.parseObject((String) object, Config.class);
             modelConfig = Conf2MC(config);
             modelConfig.setModelId(model.getModelId());
             modelConfigService.save(modelConfig);
+        }
+        return Result.succ(modelParam);
+    }
+
+    @PutMapping("/update")
+    public Result update(@RequestBody ModelParam modelParam) {
+        User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        Long userid = user.getId();
+        Model model = new Model();
+
+        System.out.println("MODEL_UPDATE" + modelParam.getModelId());
+
+        model.setUserId(userid);
+        model.setModelId(modelParam.getModelId());
+        model.setUpdateTime(LocalDateTime.now());
+        model.setBasicModel(modelParam.getBasicModel());
+        model.setPreTrainedModel(modelParam.getPreTrainedModel());
+        model.setDescription(modelParam.getDescription());
+        model.setModelName(modelParam.getModelName());
+        model.setInitParam(modelParam.getInitParam());
+        modelService.updateById(model);
+        System.out.println(model.toString());
+
+        Config config = modelParam.getConfig();
+        ModelConfig modelConfig = new ModelConfig(); // default value
+//        System.out.println(object.toString());
+
+        if (config == null) {
+            modelConfig.setModelId(model.getModelId());
+            modelConfigService.updateByModelId(model.getModelId(), modelConfig);
+        } else {
+            System.out.println(config.toString());
+//            Config config = JSON.parseObject((String) object, Config.class);
+            modelConfig = Conf2MC(config);
+            modelConfig.setModelId(model.getModelId());
+            modelConfigService.updateByModelId(model.getModelId(), modelConfig);
+            if (modelConfigService.getByModelId(model.getModelId())==null){
+                modelConfigService.save(modelConfig);
+            }
+            System.out.println(modelConfig.toString());
         }
         return Result.succ(modelParam);
     }
@@ -94,7 +134,9 @@ public class ModelController {
             ModelConfig modelConfig = modelConfigService.getByModelId(Long.parseLong(model_id));
             Config config = MC2Conf(modelConfig);
             ModelParam modelParam = marshallParam(model, config);
-            return Result.succ(modelParam);
+            List<ModelParam> modelParams = new ArrayList<>();
+            modelParams.add(modelParam);
+            return Result.succ(modelParams);
         } else {
             if (name == null || name.equals("")) {
                 name = "";
@@ -166,7 +208,7 @@ public class ModelController {
             }
             System.out.println("Freezelist" + list.toString());
             config.setFreeze(list);
-        }catch (Exception e){
+        } catch (Exception e) {
             config.setFreeze(new ArrayList<>());
         }
         return config;
@@ -181,7 +223,7 @@ public class ModelController {
         modelConfig.setPoolerType(config.getPoolerType());
         List<Integer> freezes = config.getFreeze();
         String str = "";
-        if (freezes != null && freezes.size() != 0){
+        if (freezes != null && freezes.size() != 0) {
             for (Integer freeze : freezes) {
                 str += freeze + ",";
             }

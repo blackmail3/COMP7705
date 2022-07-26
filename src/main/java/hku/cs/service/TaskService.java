@@ -16,4 +16,6 @@ public interface TaskService extends IService<Task> {
     List<Task> getRunning();
 
     List<Task> getComplete();
+
+    List<Task> getByType(int type);
 }

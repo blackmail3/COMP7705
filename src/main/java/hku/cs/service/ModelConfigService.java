@@ -5,4 +5,5 @@ import hku.cs.entity.ModelConfig;
 
 public interface ModelConfigService extends IService<ModelConfig> {
     ModelConfig getByModelId(Long ModelId);
+    boolean updateByModelId(Long model_id, ModelConfig modelConfig);
 }

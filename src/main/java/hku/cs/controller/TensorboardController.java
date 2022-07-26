@@ -60,15 +60,15 @@ public class TensorboardController {
 //                            + "\"task_id\":\""
 //                            + task_id
                             + "\"}";
-//                    String body = "{\"port\":\""
-//                            + i + "\","
-//                            + "\"user_dir\":\""
-////                            + "/var/doc/usr" + userid + "/task/" + task_id + "/tensorboard"
-////                            + task_id + "\","
-//                            + "/root/TextCLS\","
-//                            + "\"task_id\":\""
-//                            + task_id
-//                            + "\"}";
+                     body = "{\"port\":\""
+                            + i + "\","
+                            + "\"user_dir\":\""
+//                            + "/var/doc/usr" + userid + "/task/" + task_id + "/tensorboard"
+//                            + task_id + "\","
+                            + "/root/TextCLS\","
+                            + "\"task_id\":\""
+                            + task_id
+                            + "\"}";
                     post.setEntity(new StringEntity(body));
                     post.setHeader("Content-type", "application/json");
                     System.out.println(body);

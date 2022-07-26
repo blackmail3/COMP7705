@@ -32,7 +32,7 @@ public class Task implements Serializable {
 
     private Long datasetIdTest;
 
-    private Float learningRate;
+    private String learningRate;
 
     private Integer maxLength;
 
@@ -54,4 +54,6 @@ public class Task implements Serializable {
     private String testPath;
 
     private String trainPath;
+
+    private Long datasetIdTrainTask;
 }

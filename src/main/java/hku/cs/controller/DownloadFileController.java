@@ -30,7 +30,7 @@ public class DownloadFileController {
 
     @GetMapping("/log/{task_id}")
     @ResponseBody
-    public Result download(HttpServletRequest request, HttpServletResponse response, @PathVariable Long task_id) {
+    public void download(HttpServletRequest request, HttpServletResponse response, @PathVariable Long task_id) throws IOException {
 //        String filePath = "D:\\0\\HKU\\proj\\var\\doc\\usr1\\model_config\\model_config_15.json";
 //        String fileName = "model_config_15.json";
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -39,23 +39,34 @@ public class DownloadFileController {
         if (!new File(filePath).exists()){
             filePath = "/var/doc/usr1/task/1/log";
         }
-        String fileName = user_id + "_" + task_id + "_" + "log";
+//        filePath = "D:\\0\\HKU\\proj\\log.txt";
+        String fileName = "log";
+        FileInputStream fileInputStream = new FileInputStream(new File(filePath));
+        InputStream fis = new BufferedInputStream(fileInputStream);
+        byte[] buffers = new byte[fis.available()];
+        fis.read(buffers);
+        fis.close();
         try (
                 InputStream is = this.getClass().getResourceAsStream(filePath);
                 OutputStream os = response.getOutputStream();
         ) {
-            byte[] bytes = StreamUtils.copyToByteArray(is);
+//            byte[] bytes = StreamUtils.copyToByteArray(is);
             response.reset();
             response.setContentType("application/octet-stream");
             response.addHeader("Content-Disposition", "attachment;filename=" + new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1));
             response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
-            response.addHeader("Content-Length", "" + bytes.length);
-            os.write(bytes);
+            response.addHeader("Access-Control-Allow-Origin", "*");
+            response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+//            response.setHeader("Content-Disposition", "attachment; filename=log");
+//            System.out.println(bytes.length);
+            System.out.println(buffers.length);
+            response.addHeader("Content-Length", "" + buffers.length);
+            os.write(buffers);
             os.flush();
-            return Result.succ("success");
+//            return Result.succ("success");
         } catch (Exception e) {
             e.printStackTrace();
-            return Result.succ("Download file error...");
+//            return Result.succ("Download file error...");
         }
     }
 
