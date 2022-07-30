@@ -1,4 +1,4 @@
-# COMP7705 Everyone can NLP: A User-defined Well Visualized NLP Training Platform
+# COMP7705 Everyone can NLP: A User-defined Well Visualized NLP Training Platform - Backend
 
 
 ## Dev Environment
