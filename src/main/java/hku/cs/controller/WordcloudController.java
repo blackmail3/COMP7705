@@ -40,7 +40,7 @@ public class WordcloudController {
         } else
             input_type = "dual ";
         String orgData = dataset.getPath() + " ";
-        String wordCount = "50";
+        String wordCount = "100";
         String savePath = "/var/doc/usr" + user_id + "/jsonfile" + dataset_id;
         File file = new File(savePath);
         if (!file.exists())
@@ -48,11 +48,27 @@ public class WordcloudController {
         savePath += "/word_result.json ";
         System.out.println(orgData);
 //        String command = "python3 " + runningFile + input_type + orgData + savePath + wordCount;
+//        if (dataset.getLabel())
         int input1 = 0, input2 = 1, label = 2;
-        if (dataset.getType()==0)//single
-        {
-           input2 = -1;
-           label = 1;
+//        if (dataset.getType() == 0)//single
+//        {
+//            input2 = -1;
+//            label = 1;
+//        }
+        if (dataset.getLabel().equals("") || dataset.getLabel() == null) {
+            label = -1;
+        } else {
+            label = Integer.parseInt(dataset.getLabel());
+        }
+        if (dataset.getInput1().equals("") || dataset.getInput1() == null) {
+            input1 = -1;
+        } else {
+            input1 = Integer.parseInt(dataset.getInput1());
+        }
+        if (dataset.getInput2().equals("") || dataset.getInput2() == null) {
+            input2 = -1;
+        } else {
+            input2 = Integer.parseInt(dataset.getInput2());
         }
         String command = "python3 " + runningFile + orgData + savePath + wordCount + " " + input1 + " " + input2 + " " + label;
 

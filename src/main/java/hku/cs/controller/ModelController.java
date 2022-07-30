@@ -149,7 +149,13 @@ public class ModelController {
                 ModelParam modelParam = marshallParam(model, config);
                 modelParams.add(modelParam);
             }
-            return Result.succ(modelParams);
+
+//            return Result.succ(modelParams);
+            List<ModelParam> res = new ArrayList<>();
+            for (int i = modelParams.size()-1; i >= 0; i--) {
+                res.add(modelParams.get(i));
+            }
+            return Result.succ(res);
         }
     }
 

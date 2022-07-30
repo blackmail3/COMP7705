@@ -62,7 +62,11 @@ public class DatasetController {
         } else {
             System.out.println(datasetService.getByName(name).toString());
             List<Dataset> list = new ArrayList<>(datasetService.getByName(name));
-            return Result.succ(list);
+            List<Dataset> res = new ArrayList<>();
+            for (int i = list.size()-1; i >= 0; i--) {
+                res.add(list.get(i));
+            }
+            return Result.succ(res);
         }
 
     }

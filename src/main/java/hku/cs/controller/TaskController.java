@@ -282,9 +282,14 @@ public class TaskController {
             status = "-1";
         }
         List<Task> list = taskService.getByName(name, Integer.parseInt(status));
-        if (list != null)
-            return Result.succ(list);
-        else
+        if (list != null) {
+            List<Task> res = new ArrayList<>();
+            for (int i = list.size() - 1; i >= 0; i--) {
+                res.add(list.get(i));
+            }
+            return Result.succ(res);
+//            return Result.succ(list);
+        } else
             return Result.succ(new ArrayList<>());
     }
 
@@ -336,6 +341,7 @@ public class TaskController {
             } else { // predict & eval
                 fullPath = Config2JsonFile_other(task_id);
             }
+//            task.setConfigPath(fullPath);
             PostUtil util = new PostUtil(fullPath, task_id);
             System.out.println("BEFORE SENDING..." + fullPath + " TASK" + task_id);
             String res = util.sendPost(user_id);
@@ -520,7 +526,9 @@ public class TaskController {
         try {
             User user = userService.getByUsername((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
             Long userid = user.getId();
+            Task t = taskService.getByTaskId(task_id);
             String body = "{\"config_path\":\""
+                    + "/var/doc/usr" + user.getId() + "/model_config" + t.getTaskId()
                     + "\","
                     + "\"user_dir\":\""
                     + "/var/doc/usr" + userid + "/task/"
@@ -536,8 +544,8 @@ public class TaskController {
             HttpEntity entity = response.getEntity();
             System.out.println(EntityUtils.toString(entity, "UTF-8"));
             // FIXME: 2022/7/6 task status...
-            Task t = taskService.getByTaskId(task_id);
             t.setStatus(3);
+            taskService.updateById(t);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         } catch (ClientProtocolException e) {
