@@ -5,6 +5,11 @@
 
 The backend is written in Java (JDK11), and uses Maven as build tool. We recommend IntelliJ IDEA as IDE.
 
+## Requirements
+* python version=3.7
+* polyglot
+* stopwords-iso
+
 ## Configuration
 
 Everything in `/src/main/resources/application.yml`, including user info, project and database configs, etc.
