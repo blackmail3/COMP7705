@@ -9,6 +9,7 @@ The backend is written in Java (JDK11), and uses Maven as build tool. We recomme
 * python version=3.7
 * polyglot
 * stopwords-iso
+* pandas
 
 ## Configuration
 
